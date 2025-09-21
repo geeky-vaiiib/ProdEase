@@ -6,8 +6,7 @@ import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Search, Plus, Edit, Trash2, Settings, Activity, Clock, DollarSign } from "lucide-react"
-import { MasterSidebar } from "@/components/master-sidebar"
-import { ProfileSidebar } from "@/components/profile-sidebar"
+import { AppLayout } from "@/components/app-layout"
 
 // Mock data for work centers
 const mockWorkCenters = [
@@ -112,14 +111,11 @@ export default function WorkCentersPage() {
   const avgEfficiency = workCenters.reduce((sum, wc) => sum + wc.efficiency, 0) / workCenters.length
 
   return (
-    <div className="flex h-screen bg-background text-foreground">
-      <ProfileSidebar />
-
-      <main className="flex-1 overflow-auto">
-        <div className="p-6">
-          {/* Header */}
-          <div className="flex items-center justify-between mb-6">
-            <div>
+    <AppLayout>
+      <div className="space-y-6">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div>
               <h1 className="text-2xl font-bold text-foreground">Work Centers</h1>
               <p className="text-muted-foreground mt-1">Manage production work centers and capacity</p>
             </div>
@@ -287,11 +283,8 @@ export default function WorkCentersPage() {
                 </CardContent>
               </Card>
             ))}
-          </div>
         </div>
-      </main>
-
-      <MasterSidebar />
-    </div>
+      </div>
+    </AppLayout>
   )
 }

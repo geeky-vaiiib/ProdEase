@@ -63,6 +63,7 @@ const manufacturingOrderSchemas = {
       unit: Joi.string().required(),
       unitCost: Joi.number().min(0).default(0)
     })).default([]),
+    status: Joi.string().valid('Draft', 'Confirmed', 'In Progress', 'To Close', 'Done', 'Cancelled').default('Draft'),
     priority: Joi.string().valid('Low', 'Medium', 'High', 'Urgent').default('Medium'),
     notes: Joi.string().max(1000).optional()
   }),

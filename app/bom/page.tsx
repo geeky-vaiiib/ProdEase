@@ -10,8 +10,8 @@ import { Badge } from "@/components/ui/badge"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Search, Plus, MoreHorizontal, Eye, Edit, Trash2, FileText, Package } from "lucide-react"
-import { MasterSidebar } from "@/components/master-sidebar"
-import { ProfileSidebar } from "@/components/profile-sidebar"
+import { AppLayout } from "@/components/app-layout"
+import { useAuth } from "@/contexts/auth-context"
 
 interface BOM {
   id: string
@@ -160,14 +160,14 @@ export default function BOMPage() {
   const [filteredBOMs, setFilteredBOMs] = useState<BOM[]>(mockBOMs)
   const [searchQuery, setSearchQuery] = useState("")
   const router = useRouter()
+  const { user } = useAuth()
 
   // Check authentication
   useEffect(() => {
-    const user = localStorage.getItem("flowforge_user")
     if (!user) {
       router.push("/auth/login")
     }
-  }, [router])
+  }, [user, router])
 
   // Filter BOMs
   useEffect(() => {
@@ -212,25 +212,20 @@ export default function BOMPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="flex">
-        <ProfileSidebar />
-
-        <div className="flex-1 flex flex-col lg:ml-64">
-          <div className="flex-1 lg:mr-64">
-            <div className="p-6">
-              {/* Header */}
-              <div className="flex items-center justify-between mb-8">
-                <div>
-                  <h1 className="text-3xl font-bold text-foreground">Bills of Materials</h1>
-                  <p className="text-muted-foreground mt-1">Manage product structures and component requirements</p>
-                </div>
-                <Button asChild>
-                  <Link href="/bom/new">
-                    <Plus className="h-4 w-4 mr-2" />
-                    New BOM
-                  </Link>
-                </Button>
+    <AppLayout>
+      <div className="space-y-6">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-foreground">Bills of Materials</h1>
+            <p className="text-muted-foreground mt-1">Manage product structures and component requirements</p>
+          </div>
+          <Button asChild>
+            <Link href="/bom/new">
+              <Plus className="h-4 w-4 mr-2" />
+              New BOM
+            </Link>
+          </Button>
               </div>
 
               {/* Search */}
@@ -342,12 +337,7 @@ export default function BOMPage() {
                   )}
                 </CardContent>
               </Card>
-            </div>
-          </div>
-        </div>
-
-        <MasterSidebar />
       </div>
-    </div>
+    </AppLayout>
   )
 }

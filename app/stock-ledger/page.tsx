@@ -5,9 +5,10 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Search, Plus, Edit, TrendingUp, TrendingDown, Package, AlertTriangle } from "lucide-react"
-import { MasterSidebar } from "@/components/master-sidebar"
-import { ProfileSidebar } from "@/components/profile-sidebar"
+import { Search, Plus, Edit, TrendingUp, TrendingDown, Package, AlertTriangle, Filter } from "lucide-react"
+import { AppLayout } from "@/components/app-layout"
+import { AddStockItemModal } from "@/components/add-stock-item-modal"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 // Mock data for stock ledger
 const mockStockItems = [
@@ -131,25 +132,19 @@ export default function StockLedgerPage() {
   const categories = [...new Set(stockItems.map((item) => item.category))].length
 
   return (
-    <div className="flex h-screen bg-background text-foreground">
-      <ProfileSidebar />
-
-      <main className="flex-1 overflow-auto">
-        <div className="p-6">
-          {/* Header */}
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <h1 className="text-2xl font-bold text-foreground">Stock Ledger</h1>
-              <p className="text-muted-foreground mt-1">Manage inventory and track stock movements</p>
-            </div>
-            <Button className="bg-blue-600 hover:bg-blue-700 text-white">
-              <Plus className="w-4 h-4 mr-2" />
-              Add Stock Item
-            </Button>
+    <AppLayout>
+      <div className="space-y-6">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-foreground">Stock Ledger</h1>
+            <p className="text-muted-foreground mt-1">Manage inventory and track stock movements</p>
           </div>
+          <AddStockItemModal />
+        </div>
 
-          {/* KPI Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+        {/* KPI Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <Card className="bg-card border-border">
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
@@ -304,10 +299,7 @@ export default function StockLedgerPage() {
               </div>
             </CardContent>
           </Card>
-        </div>
-      </main>
-
-      <MasterSidebar />
-    </div>
+      </div>
+    </AppLayout>
   )
 }

@@ -3,11 +3,12 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { useAuth } from '@/contexts/auth-context';
-import { UserAvatar } from '@/components/user-avatar';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { RealTimeIndicator } from '@/components/real-time-indicator';
-import { Button } from '@/components/ui/button';
-import { Bell, Search } from 'lucide-react';
+import { NotificationsDropdown } from '@/components/notifications-dropdown';
+import { SettingsDropdown } from '@/components/settings-dropdown';
+import { UserProfileDropdown } from '@/components/user-profile-dropdown';
+import { GlobalSearch } from '@/components/global-search';
 
 export function AppHeader() {
   const { user } = useAuth();
@@ -28,17 +29,8 @@ export function AppHeader() {
         </Link>
       </div>
 
-      {/* Search Bar */}
-      <div className="flex-1 max-w-md">
-        <div className="relative">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-          <input
-            type="search"
-            placeholder="Search orders, products..."
-            className="w-full rounded-lg bg-background pl-8 pr-4 py-2 text-sm border border-input focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring"
-          />
-        </div>
-      </div>
+      {/* Global Search */}
+      <GlobalSearch />
 
       {/* Right side actions */}
       <div className="flex items-center gap-2">
@@ -46,24 +38,16 @@ export function AppHeader() {
         <RealTimeIndicator />
 
         {/* Notifications */}
-        <Button variant="ghost" size="icon" className="h-9 w-9">
-          <Bell className="h-4 w-4" />
-          <span className="sr-only">Notifications</span>
-        </Button>
+        <NotificationsDropdown />
+
+        {/* Settings */}
+        <SettingsDropdown />
 
         {/* Theme Toggle */}
         <ThemeToggle />
 
-        {/* User Avatar */}
-        {user && (
-          <div className="flex items-center gap-2">
-            <UserAvatar user={user} size="sm" />
-            <div className="hidden md:block">
-              <p className="text-sm font-medium">{user.username}</p>
-              <p className="text-xs text-muted-foreground">{user.role}</p>
-            </div>
-          </div>
-        )}
+        {/* User Profile */}
+        {user && <UserProfileDropdown />}
       </div>
     </header>
   );

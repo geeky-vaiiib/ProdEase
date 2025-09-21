@@ -9,7 +9,7 @@ class ApiClient {
   }
 
   private getAuthHeaders(): HeadersInit {
-    const token = localStorage.getItem('prodease_token');
+    const token = localStorage.getItem('flowforge_token');
     return {
       'Content-Type': 'application/json',
       ...(token && { Authorization: `Bearer ${token}` }),
@@ -28,6 +28,7 @@ class ApiClient {
     const response = await fetch(`${this.baseURL}${endpoint}`, {
       method: 'GET',
       headers: this.getAuthHeaders(),
+      credentials: 'include',
     });
     return this.handleResponse<T>(response);
   }
@@ -37,6 +38,7 @@ class ApiClient {
       method: 'POST',
       headers: this.getAuthHeaders(),
       body: data ? JSON.stringify(data) : undefined,
+      credentials: 'include',
     });
     return this.handleResponse<T>(response);
   }
@@ -46,6 +48,7 @@ class ApiClient {
       method: 'PUT',
       headers: this.getAuthHeaders(),
       body: data ? JSON.stringify(data) : undefined,
+      credentials: 'include',
     });
     return this.handleResponse<T>(response);
   }
@@ -55,6 +58,7 @@ class ApiClient {
       method: 'PATCH',
       headers: this.getAuthHeaders(),
       body: data ? JSON.stringify(data) : undefined,
+      credentials: 'include',
     });
     return this.handleResponse<T>(response);
   }
@@ -63,6 +67,7 @@ class ApiClient {
     const response = await fetch(`${this.baseURL}${endpoint}`, {
       method: 'DELETE',
       headers: this.getAuthHeaders(),
+      credentials: 'include',
     });
     return this.handleResponse<T>(response);
   }

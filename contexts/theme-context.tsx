@@ -13,11 +13,10 @@ interface ThemeContextType {
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001/api';
-
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [theme, setThemeState] = useState<Theme>('system');
   const [actualTheme, setActualTheme] = useState<'light' | 'dark'>('light');
+  const [mounted, setMounted] = useState(false);
 
   // Get system theme preference
   const getSystemTheme = (): 'light' | 'dark' => {
@@ -41,7 +40,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
       const root = document.documentElement;
       root.classList.remove('light', 'dark');
       root.classList.add(resolvedTheme);
-      
+
       // Update CSS variables for better theme support
       if (resolvedTheme === 'dark') {
         root.style.colorScheme = 'dark';
@@ -51,62 +50,22 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  // Save theme preference to backend
-  const saveThemeToBackend = async (newTheme: Theme) => {
-    try {
-      const token = localStorage.getItem('prodease_token');
-      if (!token) return;
 
-      const response = await fetch(`${API_BASE_URL}/theme`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ theme: newTheme })
-      });
-
-      if (!response.ok) {
-        console.warn('Failed to save theme preference to backend');
-      }
-    } catch (error) {
-      console.warn('Error saving theme preference:', error);
-    }
-  };
-
-  // Load theme preference from backend
-  const loadThemeFromBackend = async (): Promise<Theme | null> => {
-    try {
-      const token = localStorage.getItem('prodease_token');
-      if (!token) return null;
-
-      const response = await fetch(`${API_BASE_URL}/theme`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        return data.data?.theme || null;
-      }
-    } catch (error) {
-      console.warn('Error loading theme preference:', error);
-    }
-    return null;
-  };
 
   // Set theme with persistence
-  const setTheme = async (newTheme: Theme) => {
+  const setTheme = (newTheme: Theme) => {
     setThemeState(newTheme);
-    localStorage.setItem('prodease-theme', newTheme);
-    
+
+    // Save to localStorage
+    try {
+      localStorage.setItem('flowforge_theme', newTheme);
+    } catch (error) {
+      console.warn('Failed to save theme to localStorage:', error);
+    }
+
     const resolved = resolveActualTheme(newTheme);
     setActualTheme(resolved);
     applyTheme(resolved);
-    
-    // Save to backend
-    await saveThemeToBackend(newTheme);
   };
 
   // Toggle between light and dark (ignoring system)
@@ -117,28 +76,25 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
   // Initialize theme on mount
   useEffect(() => {
-    const initializeTheme = async () => {
-      // Priority: 1. Backend preference, 2. localStorage, 3. system preference
-      const backendTheme = await loadThemeFromBackend();
-      const localTheme = localStorage.getItem('prodease-theme') as Theme | null;
-      const systemTheme = getSystemTheme();
-      
-      let initialTheme: Theme = 'system';
-      
-      if (backendTheme) {
-        initialTheme = backendTheme;
-      } else if (localTheme && ['light', 'dark', 'system'].includes(localTheme)) {
-        initialTheme = localTheme;
-      }
-      
-      setThemeState(initialTheme);
-      const resolved = resolveActualTheme(initialTheme);
-      setActualTheme(resolved);
-      applyTheme(resolved);
-      
-      // Save to localStorage if it came from backend
-      if (backendTheme) {
-        localStorage.setItem('prodease-theme', backendTheme);
+    setMounted(true);
+
+    const initializeTheme = () => {
+      try {
+        // Get theme from localStorage, fallback to system
+        const localTheme = localStorage.getItem('flowforge_theme') as Theme | null;
+        const initialTheme: Theme = localTheme && ['light', 'dark', 'system'].includes(localTheme) ? localTheme : 'system';
+
+        setThemeState(initialTheme);
+        const resolved = resolveActualTheme(initialTheme);
+        setActualTheme(resolved);
+        applyTheme(resolved);
+      } catch (error) {
+        console.error('Error initializing theme:', error);
+        // Fallback to system theme
+        const systemTheme = getSystemTheme();
+        setThemeState('system');
+        setActualTheme(systemTheme);
+        applyTheme(systemTheme);
       }
     };
 
@@ -147,7 +103,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
   // Listen for system theme changes
   useEffect(() => {
-    if (typeof window === 'undefined') return;
+    if (typeof window === 'undefined' || !mounted) return;
 
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
     const handleChange = () => {
@@ -160,7 +116,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
     mediaQuery.addEventListener('change', handleChange);
     return () => mediaQuery.removeEventListener('change', handleChange);
-  }, [theme]);
+  }, [theme, mounted]);
 
   const value: ThemeContextType = {
     theme,

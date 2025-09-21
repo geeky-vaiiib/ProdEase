@@ -1,268 +1,259 @@
-# 🔧 ProdEase Manufacturing Management System
+# FlowForge - Manufacturing Management System
 
-A comprehensive, production-ready manufacturing management platform built with modern web technologies. ProdEase eliminates spreadsheets and manual tracking with a centralized dashboard, user roles, and real-time data management.
+A comprehensive digital manufacturing workflow management and production tracking system built with modern web technologies.
 
-![ProdEase Logo](public/prodease-logo.svg)
+## 🚀 Features
 
-## ✨ Features
+- **Manufacturing Orders Management**: Create, track, and manage manufacturing orders with real-time status updates
+- **Work Orders**: Detailed work order tracking with progress monitoring
+- **Bill of Materials (BOM)**: Comprehensive BOM management with component tracking
+- **Work Centers**: Manage production work centers and capacity planning
+- **Stock Ledger**: Real-time inventory tracking and stock management
+- **User Management**: Role-based access control with admin, manager, and operator roles
+- **Real-time Updates**: Live data synchronization across all connected clients
+- **Dark/Light Theme**: Professional UI with theme switching and localStorage persistence
+- **Responsive Design**: Mobile-friendly interface with persistent sidebar navigation
+- **Authentication Flow**: Secure JWT-based authentication with route protection
 
-### 🔐 **Authentication & Security**
-- Secure JWT-based authentication with role-based access control
-- Password reset with email OTP verification
-- Multi-role support (Admin, Manager, Operator, Inventory)
-- Session management and secure logout
+## 🛠 Technology Stack
 
-### 📋 **Manufacturing Orders Management**
-- Create, track, and manage production orders end-to-end
-- Real-time progress tracking with visual indicators
-- Priority-based order management
-- Component and BOM integration
-- Assignee management and notifications
+### Frontend
+- **Next.js 14**: React framework with App Router
+- **TypeScript**: Type-safe development
+- **Tailwind CSS v4**: Utility-first CSS framework with dark mode
+- **Radix UI**: Accessible component library
+- **Lucide React**: Beautiful icons
+- **Recharts**: Data visualization
 
-### ⚙️ **Work Orders & Operations**
-- Detailed operation tracking and scheduling
-- Work center assignment and capacity planning
-- Time tracking with efficiency monitoring
-- Quality check integration
-- Collaborative comment system
+### Backend
+- **Node.js**: JavaScript runtime
+- **Express.js**: Web application framework
+- **MongoDB**: NoSQL database with Mongoose ODM
+- **JWT**: JSON Web Token authentication
+- **bcryptjs**: Password hashing
+- **Helmet**: Security middleware
+- **CORS**: Cross-origin resource sharing
+- **Rate Limiting**: Express rate limiting for API protection
 
-### 📦 **Stock & Inventory Management**
-- Real-time inventory tracking with automatic calculations
-- Stock transactions (IN/OUT/ADJUSTMENT) with audit trail
-- Low stock alerts and reorder level management
-- Supplier information and lead time tracking
-- Cost tracking and inventory valuation
+## ⚡ Quick Start
 
-### 🏭 **Work Centers & Resources**
-- Equipment and resource management
-- Capacity planning and availability tracking
-- Maintenance scheduling and downtime tracking
-- Operator assignment and skill management
-- Performance metrics and efficiency monitoring
+### Prerequisites
+- Node.js 18+ and npm
+- MongoDB Atlas account or local MongoDB installation
 
-### 📊 **Dashboard & Analytics**
-- Real-time KPI monitoring and production metrics
-- Interactive charts and data visualization
-- Stock level alerts and critical notifications
-- Order status overview with filtering
-- Performance analytics and reporting
+### Installation
 
-### 🎨 **Modern UI/UX**
-- Responsive design for desktop, tablet, and mobile
-- Light/dark mode toggle with system preference detection
-- Professional ProdEase branding and logo
-- Intuitive navigation with master and profile sidebars
-- Accessible design following WCAG guidelines
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/kritika43-bit/FlowForge.git
+   cd FlowForge
+   ```
 
-## 🚀 Technology Stack
+2. **Install dependencies**
+   ```bash
+   # Install frontend dependencies
+   npm install
+   
+   # Install backend dependencies
+   cd backend
+   npm install
+   cd ..
+   ```
 
-### **Frontend**
-- **React 18** with Next.js 14 (App Router)
-- **TypeScript** for type safety and better development experience
-- **Tailwind CSS v4** for modern, responsive styling
-- **shadcn/ui** for consistent, accessible UI components
-- **Lucide React** for beautiful, scalable icons
-- **React Context API** for global state management
+3. **Environment Configuration**
+   
+   Create `.env.local` in the root directory:
+   ```env
+   NEXT_PUBLIC_APP_URL=http://localhost:3000
+   NEXT_PUBLIC_API_URL=http://localhost:5001/api
+   ```
+   
+   Create `backend/.env`:
+   ```env
+   # Database Configuration
+   MONGODB_URI=your_mongodb_connection_string
+   DB_NAME=flowforge
+   
+   # JWT Configuration
+   JWT_SECRET=your-super-secret-jwt-key
+   JWT_EXPIRE=7d
+   
+   # Server Configuration
+   PORT=5001
+   NODE_ENV=development
+   
+   # Frontend URL (for CORS)
+   FRONTEND_URL=http://localhost:3000
+   
+   # Rate Limiting (Development - High limits)
+   RATE_LIMIT_WINDOW_MS=60000
+   RATE_LIMIT_MAX_REQUESTS=1000
+   ```
 
-### **Backend**
-- **Node.js** with Express.js framework
-- **MongoDB Atlas** with Mongoose ODM
-- **JWT** for secure authentication
-- **bcryptjs** for password hashing (12 rounds)
-- **Joi** for comprehensive request validation
-- **Nodemailer** for email notifications
-- **Helmet** for security headers
-- **CORS** for cross-origin resource sharing
-- **Rate limiting** for API protection
+4. **Start the application**
+   ```bash
+   # Start backend (in one terminal)
+   cd backend
+   npm run dev
+   
+   # Start frontend (in another terminal)
+   npm run dev
+   ```
 
-## 📋 Prerequisites
+5. **Access the application**
+   - Frontend: http://localhost:3000 (or http://localhost:3001 if 3000 is in use)
+   - Backend API: http://localhost:5001
 
-- **Node.js 18+**
-- **MongoDB Atlas** account (or local MongoDB instance)
-- **Git** for version control
-- **Email service** (Gmail, SendGrid, etc.) for OTP functionality
+## 🧪 Testing
 
-## 🛠️ Installation & Setup
-
-### 1. Clone the Repository
+### Smoke Tests
+Run the comprehensive test suite to verify all functionality:
 ```bash
-git clone https://github.com/your-username/prodease.git
-cd prodease
+node test-flowforge-functionality.js
 ```
 
-### 2. Install Dependencies
+### Manual Testing Checklist
+1. **Health Check**: `curl http://localhost:5001/api/health`
+2. **User Signup**: 
+   ```bash
+   curl -X POST http://localhost:5001/api/auth/register \
+     -H "Content-Type: application/json" \
+     -d '{"username":"testuser","email":"test@flowforge.com","password":"Test@1234","role":"operator"}'
+   ```
+3. **User Login**:
+   ```bash
+   curl -X POST http://localhost:5001/api/auth/login \
+     -H "Content-Type: application/json" \
+     -d '{"email":"testuser","password":"Test@1234"}'
+   ```
 
-**Frontend:**
+### Frontend Flow Testing
+1. Visit http://localhost:3000 → should redirect to /auth/login (not dashboard)
+2. Sign up a user → redirect to login with success message
+3. Login with created user → redirect to /dashboard with data fetching
+4. Navigate through sidebar links → all pages render with consistent layout
+5. Toggle theme → persists on reload
+6. Access settings → profile editing and logout work
+
+## 📡 API Endpoints
+
+### Authentication
+- `GET /api/health` - Health check endpoint
+- `POST /api/auth/register` - User registration
+- `POST /api/auth/login` - User login
+- `GET /api/auth/me` - Get current user profile
+- `POST /api/auth/logout` - User logout
+
+### Manufacturing Orders
+- `GET /api/manufacturing-orders` - Get all manufacturing orders
+- `POST /api/manufacturing-orders` - Create new manufacturing order
+- `GET /api/manufacturing-orders/:id` - Get specific manufacturing order
+- `PUT /api/manufacturing-orders/:id` - Update manufacturing order
+- `DELETE /api/manufacturing-orders/:id` - Delete manufacturing order
+
+### Work Orders
+- `GET /api/work-orders` - Get all work orders
+- `POST /api/work-orders` - Create new work order
+- `GET /api/work-orders/:id` - Get specific work order
+- `PUT /api/work-orders/:id` - Update work order
+
+### Work Centers
+- `GET /api/work-centers` - Get all work centers
+- `POST /api/work-centers` - Create new work center
+- `PUT /api/work-centers/:id` - Update work center
+
+### Stock Management
+- `GET /api/stock` - Get stock items
+- `POST /api/stock` - Add stock item
+- `PUT /api/stock/:id` - Update stock item
+
+## 👥 User Roles
+
+- **Admin**: Full system access, user management
+- **Manager**: Manufacturing oversight, reporting, order management
+- **Operator**: Production floor operations, work order updates
+
+## 🔧 Development
+
+### Project Structure
+```
+FlowForge/
+├── app/                    # Next.js App Router pages
+│   ├── auth/              # Authentication pages
+│   ├── dashboard/         # Dashboard page
+│   ├── manufacturing-orders/
+│   ├── work-orders/
+│   ├── work-centers/
+│   ├── stock-ledger/
+│   ├── bom/
+│   └── settings/
+├── components/            # Reusable React components
+│   ├── ui/               # Base UI components
+│   ├── app-layout.tsx    # Global layout component
+│   └── auth-guard.tsx    # Route protection
+├── contexts/             # React contexts
+│   ├── auth-context.tsx  # Authentication state
+│   ├── theme-context.tsx # Theme management
+│   └── data-context.tsx  # Data management
+├── lib/                  # Utilities
+│   └── api.ts           # API client
+├── backend/             # Express.js backend
+│   ├── models/          # Mongoose schemas
+│   ├── routes/          # API routes
+│   ├── middleware/      # Custom middleware
+│   └── server.js        # Main server file
+└── test-flowforge-functionality.js  # Test suite
+```
+
+### Key Features Implemented
+- ✅ **Global App Layout**: Persistent sidebar and header across all pages
+- ✅ **Theme Toggle**: Dark/light mode with localStorage persistence
+- ✅ **Authentication Flow**: Route protection with JWT tokens
+- ✅ **Settings Page**: Profile editing, preferences, and logout
+- ✅ **API Integration**: Real API calls replacing mock data
+- ✅ **Error Handling**: Comprehensive error states and user feedback
+- ✅ **Responsive Design**: Mobile-friendly with collapsible sidebar
+
+### Running Tests
 ```bash
-npm install
+# Lint code
+npm run lint
+
+# Build for production
+npm run build
+
+# Run integration tests
+node test-flowforge-functionality.js
 ```
 
-**Backend:**
-```bash
-cd backend
-npm install
-cd ..
-```
+## 🚀 Deployment
 
-### 3. Environment Configuration
-
-**Frontend (`.env.local`):**
-```env
-NEXT_PUBLIC_APP_URL=http://localhost:3001
-NEXT_PUBLIC_API_URL=http://localhost:5001/api
-```
-
-**Backend (`backend/.env`):**
-```env
-NODE_ENV=development
-PORT=5001
-
-# Database Configuration
-MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/?retryWrites=true&w=majority&appName=ProdEase
-DB_NAME=prodease
-
-# JWT Configuration
-JWT_SECRET=your_super_secure_jwt_secret_key_here
-JWT_EXPIRE=7d
-
-# Email Configuration (for OTP)
-EMAIL_HOST=smtp.gmail.com
-EMAIL_PORT=587
-EMAIL_USER=your_email@gmail.com
-EMAIL_PASS=your_app_password
-EMAIL_FROM=noreply@prodease.com
-
-# CORS Configuration
-FRONTEND_URL=http://localhost:3001
-
-# Rate Limiting
-RATE_LIMIT_WINDOW_MS=900000
-RATE_LIMIT_MAX_REQUESTS=100
-```
-
-### 4. Start Development Servers
-
-**Backend Server:**
-```bash
-cd backend
-npm run dev
-```
-
-**Frontend Server (new terminal):**
-```bash
-npm run dev
-```
-
-### 5. Access the Application
-
-- **Frontend**: http://localhost:3001
-- **Backend API**: http://localhost:5001
-- **API Health Check**: http://localhost:5001/health
-
-## 👥 Default User Accounts
-
-The system includes pre-configured users for testing:
-
-| Role | Email | Password | Permissions |
-|------|-------|----------|-------------|
-| **Admin** | admin@prodease.com | admin123 | Full system access |
-| **Manager** | manager@prodease.com | manager123 | Create/edit orders, manage users |
-| **Operator** | operator@prodease.com | operator123 | View orders, update work orders |
-
-### Build for Production
-
+### Production Build
 ```bash
 npm run build
 npm start
 ```
 
-## Project Structure
+### Environment Variables for Production
+Update `.env.local` and `backend/.env` with production values:
+- Set `NODE_ENV=production`
+- Use production MongoDB URI
+- Set secure JWT secrets
+- Configure proper CORS origins
+- Adjust rate limiting for production traffic
 
-```
-ProdEase/
-├── app/                    # Next.js app directory
-│   ├── auth/              # Authentication pages
-│   ├── dashboard/         # Main dashboard
-│   ├── manufacturing-orders/ # Manufacturing order management
-│   ├── work-orders/       # Work order management
-│   ├── bom/              # Bills of Materials
-│   ├── work-centers/     # Work center management
-│   ├── stock-ledger/     # Inventory tracking
-│   ├── profile/          # User profile
-│   └── reports/          # Reports section
-├── components/            # Reusable React components
-│   ├── ui/               # shadcn/ui components
-│   ├── master-sidebar.tsx # Navigation sidebar
-│   ├── profile-sidebar.tsx # User sidebar
-│   └── protected-route.tsx # Route protection
-├── contexts/             # React Context providers
-├── hooks/               # Custom React hooks
-├── lib/                 # Utility functions
-└── public/              # Static assets
-```
-
-## Key Features
-
-### Authentication
-- Mock authentication system with local storage
-- Protected routes with automatic redirection
-- User session management
-
-### Dashboard
-- Real-time KPIs for manufacturing orders
-- Filtering and search functionality
-- Responsive design for all screen sizes
-
-### Manufacturing Management
-- Complete manufacturing order lifecycle
-- Work order tracking and management
-- BOM creation and management
-- Stock ledger for inventory tracking
-
-### User Experience
-- Modern, dark-themed UI
-- Responsive design for mobile and desktop
-- Error boundaries for graceful error handling
-- Loading states and user feedback
-
-## Development
-
-### Available Scripts
-
-- `npm run dev` - Start development server
-- `npm run build` - Build for production
-- `npm run start` - Start production server
-- `npm run lint` - Run ESLint
-
-### Code Style
-
-The project uses:
-- TypeScript for type safety
-- ESLint for code linting
-- Prettier for code formatting (configured in IDE)
-- Tailwind CSS for styling
-
-## Contributing
+## 🤝 Contributing
 
 1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Test thoroughly
-5. Submit a pull request
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
-## 🎯 Current Status
+## 📄 License
 
-✅ **PRODUCTION READY** - The application is fully functional with:
-- ✅ Complete authentication system with JWT and role-based access
-- ✅ Full CRUD operations with real-time inline editing
-- ✅ Professional UI/UX with comprehensive theme system (light/dark/system)
-- ✅ MongoDB Atlas integration with data persistence
-- ✅ Security best practices implemented (CORS, rate limiting, input validation)
-- ✅ Comprehensive error handling and user feedback
-- ✅ Responsive design across all devices
-- ✅ Build process working without errors
-- ✅ Environment configuration and deployment ready
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## License
+## 📞 Support
 
-This project is licensed under the MIT License.
+For support, create an issue in the GitHub repository: https://github.com/kritika43-bit/FlowForge

@@ -16,6 +16,7 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<boolean>
   logout: () => void
   isLoading: boolean
+  validateToken: () => Promise<boolean>
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -30,7 +31,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Check for stored user data on mount
     const checkStoredAuth = async () => {
       try {
-        const storedToken = localStorage.getItem("prodease_token")
+        const storedToken = localStorage.getItem("flowforge_token")
 
         if (storedToken) {
           // Verify token with backend
@@ -38,7 +39,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             headers: {
               'Authorization': `Bearer ${storedToken}`,
               'Content-Type': 'application/json'
-            }
+            },
+            credentials: 'include'
           })
 
           if (response.ok) {
@@ -47,20 +49,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               setUser(data.data)
             } else {
               // Clear invalid token
-              localStorage.removeItem("prodease_token")
-              localStorage.removeItem("prodease_user")
+              localStorage.removeItem("flowforge_token")
+              localStorage.removeItem("flowforge_user")
             }
           } else {
             // Token invalid, clear storage
-            localStorage.removeItem("prodease_token")
-            localStorage.removeItem("prodease_user")
+            localStorage.removeItem("flowforge_token")
+            localStorage.removeItem("flowforge_user")
           }
         }
       } catch (error) {
         console.error("Error checking stored auth:", error)
         // Clear potentially corrupted data
-        localStorage.removeItem("prodease_user")
-        localStorage.removeItem("prodease_token")
+        localStorage.removeItem("flowforge_user")
+        localStorage.removeItem("flowforge_token")
       } finally {
         setIsLoading(false)
       }
@@ -78,15 +80,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ email, password })
+        body: JSON.stringify({ email, password }),
+        credentials: 'include'
       })
 
       const data = await response.json()
 
       if (response.ok && data.success) {
         setUser(data.user)
-        localStorage.setItem("prodease_user", JSON.stringify(data.user))
-        localStorage.setItem("prodease_token", data.token)
+        localStorage.setItem("flowforge_user", JSON.stringify(data.user))
+        localStorage.setItem("flowforge_token", data.token)
         return true
       } else {
         console.error("Login failed:", data.message)
@@ -100,9 +103,49 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }
 
+  const validateToken = async (): Promise<boolean> => {
+    try {
+      const token = localStorage.getItem("flowforge_token")
+      if (!token) {
+        return false
+      }
+
+      const response = await fetch(`${API_BASE_URL}/auth/validate`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        credentials: 'include'
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        if (data.success && data.user) {
+          setUser(data.user)
+          localStorage.setItem("prodease_user", JSON.stringify(data.user))
+          return true
+        }
+      }
+
+      // Token is invalid, clear storage
+      localStorage.removeItem("flowforge_user")
+      localStorage.removeItem("flowforge_token")
+      setUser(null)
+      return false
+    } catch (error) {
+      console.error("Token validation error:", error)
+      // Clear storage on error
+      localStorage.removeItem("flowforge_user")
+      localStorage.removeItem("flowforge_token")
+      setUser(null)
+      return false
+    }
+  }
+
   const logout = async () => {
     try {
-      const token = localStorage.getItem("prodease_token")
+      const token = localStorage.getItem("flowforge_token")
       if (token) {
         // Call logout endpoint
         await fetch(`${API_BASE_URL}/auth/logout`, {
@@ -110,19 +153,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json'
-          }
+          },
+          credentials: 'include'
         })
       }
     } catch (error) {
       console.error("Logout error:", error)
     } finally {
       setUser(null)
-      localStorage.removeItem("prodease_user")
-      localStorage.removeItem("prodease_token")
+      localStorage.removeItem("flowforge_user")
+      localStorage.removeItem("flowforge_token")
     }
   }
 
-  return <AuthContext.Provider value={{ user, login, logout, isLoading }}>{children}</AuthContext.Provider>
+  return <AuthContext.Provider value={{ user, login, logout, isLoading, validateToken }}>{children}</AuthContext.Provider>
 }
 
 export function useAuth() {

@@ -13,6 +13,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Eye, EyeOff } from "lucide-react"
 import Image from "next/image"
+import { AuthGuard } from "@/components/auth-guard"
 
 export default function LoginPage() {
   const [formData, setFormData] = useState({
@@ -53,19 +54,20 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4">
+    <AuthGuard requireAuth={false}>
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <div className="flex items-center justify-center mb-4">
             <Image
               src="/prodease-logo.svg"
-              alt="ProdEase Logo"
+              alt="FlowForge Logo"
               width={120}
               height={40}
               className="text-primary"
             />
           </div>
-          <CardTitle className="text-2xl font-bold">ProdEase</CardTitle>
+          <CardTitle className="text-2xl font-bold">FlowForge</CardTitle>
           <CardDescription>Sign in to your manufacturing management system</CardDescription>
         </CardHeader>
         <CardContent>
@@ -130,5 +132,6 @@ export default function LoginPage() {
         </CardContent>
       </Card>
     </div>
+    </AuthGuard>
   )
 }
