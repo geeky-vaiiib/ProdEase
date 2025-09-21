@@ -11,6 +11,7 @@ const errorHandler = require('./middleware/errorHandler');
 
 // Import routes
 const authRoutes = require('./routes/auth');
+// const dashboardRoutes = require('./routes/dashboard');
 const manufacturingOrderRoutes = require('./routes/manufacturingOrders');
 const workOrderRoutes = require('./routes/workOrders');
 const bomRoutes = require('./routes/billOfMaterials');
@@ -85,6 +86,7 @@ app.get('/api/health', (req, res) => {
 
 // API routes
 app.use('/api/auth', authRoutes);
+// app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/manufacturing-orders', manufacturingOrderRoutes);
 app.use('/api/work-orders', workOrderRoutes);
 app.use('/api/bom', bomRoutes);

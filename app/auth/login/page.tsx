@@ -61,13 +61,13 @@ export default function LoginPage() {
           <div className="flex items-center justify-center mb-4">
             <Image
               src="/prodease-logo.svg"
-              alt="FlowForge Logo"
+              alt="ProdEase Logo"
               width={120}
               height={40}
               className="text-primary"
             />
           </div>
-          <CardTitle className="text-2xl font-bold">FlowForge</CardTitle>
+          <CardTitle className="text-2xl font-bold">ProdEase</CardTitle>
           <CardDescription>Sign in to your manufacturing management system</CardDescription>
         </CardHeader>
         <CardContent>

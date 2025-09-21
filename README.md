@@ -1,4 +1,4 @@
-# FlowForge - Manufacturing Management System
+# ProdEase - Manufacturing Management System
 
 A comprehensive digital manufacturing workflow management and production tracking system built with modern web technologies.
 
@@ -45,8 +45,8 @@ A comprehensive digital manufacturing workflow management and production trackin
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/kritika43-bit/FlowForge.git
-   cd FlowForge
+   git clone https://github.com/geeky-vaiiib/ProdEase.git
+   cd ProdEase
    ```
 
 2. **Install dependencies**
@@ -64,22 +64,23 @@ A comprehensive digital manufacturing workflow management and production trackin
    
    Create `.env.local` in the root directory:
    ```env
+   NEXT_PUBLIC_APP_NAME=ProdEase
    NEXT_PUBLIC_APP_URL=http://localhost:3000
-   NEXT_PUBLIC_API_URL=http://localhost:5001/api
+   NEXT_PUBLIC_API_URL=http://localhost:5000/api
    ```
    
    Create `backend/.env`:
    ```env
    # Database Configuration
    MONGODB_URI=your_mongodb_connection_string
-   DB_NAME=flowforge
+   DB_NAME=prodease
    
    # JWT Configuration
    JWT_SECRET=your-super-secret-jwt-key
    JWT_EXPIRE=7d
    
    # Server Configuration
-   PORT=5001
+   PORT=5000
    NODE_ENV=development
    
    # Frontend URL (for CORS)
@@ -102,14 +103,14 @@ A comprehensive digital manufacturing workflow management and production trackin
 
 5. **Access the application**
    - Frontend: http://localhost:3000 (or http://localhost:3001 if 3000 is in use)
-   - Backend API: http://localhost:5001
+   - Backend API: http://localhost:5000
 
 ## 🧪 Testing
 
 ### Smoke Tests
 Run the comprehensive test suite to verify all functionality:
 ```bash
-node test-flowforge-functionality.js
+node test-prodease-functionality.js
 ```
 
 ### Manual Testing Checklist
@@ -177,7 +178,7 @@ node test-flowforge-functionality.js
 
 ### Project Structure
 ```
-FlowForge/
+ProdEase/
 ├── app/                    # Next.js App Router pages
 │   ├── auth/              # Authentication pages
 │   ├── dashboard/         # Dashboard page
@@ -202,7 +203,7 @@ FlowForge/
 │   ├── routes/          # API routes
 │   ├── middleware/      # Custom middleware
 │   └── server.js        # Main server file
-└── test-flowforge-functionality.js  # Test suite
+└── test-prodease-functionality.js  # Test suite
 ```
 
 ### Key Features Implemented
@@ -223,7 +224,7 @@ npm run lint
 npm run build
 
 # Run integration tests
-node test-flowforge-functionality.js
+node test-prodease-functionality.js
 ```
 
 ## 🚀 Deployment
@@ -256,4 +257,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 📞 Support
 
-For support, create an issue in the GitHub repository: https://github.com/kritika43-bit/FlowForge
+For support, create an issue in the GitHub repository: https://github.com/geeky-vaiiib/ProdEase

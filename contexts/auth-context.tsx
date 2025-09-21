@@ -21,7 +21,7 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001/api'
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
@@ -31,7 +31,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Check for stored user data on mount
     const checkStoredAuth = async () => {
       try {
-        const storedToken = localStorage.getItem("flowforge_token")
+        const storedToken = localStorage.getItem("prodease_token")
 
         if (storedToken) {
           // Verify token with backend
@@ -49,20 +49,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               setUser(data.data)
             } else {
               // Clear invalid token
-              localStorage.removeItem("flowforge_token")
-              localStorage.removeItem("flowforge_user")
+              localStorage.removeItem("prodease_token")
+              localStorage.removeItem("prodease_user")
             }
           } else {
             // Token invalid, clear storage
-            localStorage.removeItem("flowforge_token")
-            localStorage.removeItem("flowforge_user")
+            localStorage.removeItem("prodease_token")
+            localStorage.removeItem("prodease_user")
           }
         }
       } catch (error) {
         console.error("Error checking stored auth:", error)
         // Clear potentially corrupted data
-        localStorage.removeItem("flowforge_user")
-        localStorage.removeItem("flowforge_token")
+        localStorage.removeItem("prodease_user")
+        localStorage.removeItem("prodease_token")
       } finally {
         setIsLoading(false)
       }
@@ -88,8 +88,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       if (response.ok && data.success) {
         setUser(data.user)
-        localStorage.setItem("flowforge_user", JSON.stringify(data.user))
-        localStorage.setItem("flowforge_token", data.token)
+        localStorage.setItem("prodease_user", JSON.stringify(data.user))
+        localStorage.setItem("prodease_token", data.token)
         return true
       } else {
         console.error("Login failed:", data.message)
@@ -105,7 +105,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const validateToken = async (): Promise<boolean> => {
     try {
-      const token = localStorage.getItem("flowforge_token")
+      const token = localStorage.getItem("prodease_token")
       if (!token) {
         return false
       }
@@ -129,15 +129,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
 
       // Token is invalid, clear storage
-      localStorage.removeItem("flowforge_user")
-      localStorage.removeItem("flowforge_token")
+      localStorage.removeItem("prodease_user")
+      localStorage.removeItem("prodease_token")
       setUser(null)
       return false
     } catch (error) {
       console.error("Token validation error:", error)
       // Clear storage on error
-      localStorage.removeItem("flowforge_user")
-      localStorage.removeItem("flowforge_token")
+      localStorage.removeItem("prodease_user")
+      localStorage.removeItem("prodease_token")
       setUser(null)
       return false
     }
@@ -145,7 +145,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = async () => {
     try {
-      const token = localStorage.getItem("flowforge_token")
+      const token = localStorage.getItem("prodease_token")
       if (token) {
         // Call logout endpoint
         await fetch(`${API_BASE_URL}/auth/logout`, {
@@ -161,8 +161,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       console.error("Logout error:", error)
     } finally {
       setUser(null)
-      localStorage.removeItem("flowforge_user")
-      localStorage.removeItem("flowforge_token")
+      localStorage.removeItem("prodease_user")
+      localStorage.removeItem("prodease_token")
     }
   }
 

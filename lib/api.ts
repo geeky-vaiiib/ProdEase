@@ -1,4 +1,4 @@
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001/api';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
 
 // API utility class for making HTTP requests
 class ApiClient {
@@ -9,7 +9,7 @@ class ApiClient {
   }
 
   private getAuthHeaders(): HeadersInit {
-    const token = localStorage.getItem('flowforge_token');
+    const token = localStorage.getItem('prodease_token');
     return {
       'Content-Type': 'application/json',
       ...(token && { Authorization: `Bearer ${token}` }),

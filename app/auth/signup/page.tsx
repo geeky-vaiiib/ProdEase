@@ -65,7 +65,7 @@ export default function SignupPage() {
     setIsLoading(true)
 
     try {
-      const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001/api'
+      const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'
 
       const response = await fetch(`${API_BASE_URL}/auth/register`, {
         method: 'POST',
@@ -104,14 +104,14 @@ export default function SignupPage() {
           <div className="flex items-center justify-center mb-4">
             <Image
               src="/prodease-logo.svg"
-              alt="FlowForge Logo"
+              alt="ProdEase Logo"
               width={120}
               height={40}
               className="text-primary"
             />
           </div>
           <CardTitle className="text-2xl font-bold">Create Account</CardTitle>
-          <CardDescription>Join FlowForge manufacturing management system</CardDescription>
+          <CardDescription>Join ProdEase manufacturing management system</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">

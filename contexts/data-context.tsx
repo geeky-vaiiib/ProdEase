@@ -5,10 +5,10 @@ import { manufacturingOrdersApi, type ManufacturingOrder } from '@/lib/api';
 
 interface DataContextType {
   // Manufacturing Orders
-  orders: ManufacturingOrder[];
+  manufacturingOrders: ManufacturingOrder[];
   isLoading: boolean;
   error: string | null;
-  
+
   // CRUD Operations
   fetchOrders: () => Promise<void>;
   updateOrder: (orderId: string, updatedData: Partial<ManufacturingOrder>) => Promise<void>;
@@ -16,7 +16,7 @@ interface DataContextType {
   addOrder: (newOrder: ManufacturingOrder) => void;
   deleteOrder: (orderId: string) => Promise<void>;
   updateOrderStatus: (orderId: string, status: string) => Promise<void>;
-  
+
   // Real-time update functions
   refreshData: () => Promise<void>;
   clearError: () => void;
@@ -180,7 +180,7 @@ export function DataProvider({ children }: DataProviderProps) {
   }, [fetchOrders, isLoading]);
 
   const value: DataContextType = {
-    orders,
+    manufacturingOrders: orders,
     isLoading,
     error,
     fetchOrders,

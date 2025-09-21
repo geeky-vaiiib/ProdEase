@@ -129,7 +129,7 @@ export function AppLayout({ children }: AppLayoutProps) {
             <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
               <Package className="w-5 h-5 text-primary-foreground" />
             </div>
-            <span className="text-xl font-bold text-foreground">FlowForge</span>
+            <span className="text-xl font-bold text-foreground">ProdEase</span>
           </div>
 
           {/* Navigation */}
@@ -221,7 +221,7 @@ export function AppLayout({ children }: AppLayoutProps) {
           {/* Page title */}
           <div className="flex-1">
             <h1 className="text-lg font-semibold text-foreground">
-              {navigation.find((item) => pathname === item.href || pathname.startsWith(item.href + "/"))?.name || "FlowForge"}
+              {navigation.find((item) => pathname === item.href || pathname.startsWith(item.href + "/"))?.name || "ProdEase"}
             </h1>
           </div>
 
