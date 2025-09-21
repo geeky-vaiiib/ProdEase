@@ -104,7 +104,7 @@ export default function BOMDetailPage() {
 
   useEffect(() => {
     // Check authentication
-    const user = localStorage.getItem("flowforge_user")
+    const user = localStorage.getItem("prodease_user")
     if (!user) {
       router.push("/auth/login")
       return

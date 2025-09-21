@@ -15,13 +15,18 @@ import { DataSyncStatus } from "@/components/real-time-indicator"
 import { useData } from "@/contexts/data-context"
 
 interface ManufacturingOrder {
-  id: string
+  _id: string
   reference: string
   finishedProduct: string
   quantity: number
-  status: "Planned" | "In Progress" | "Done" | "Cancelled"
+  status: "Draft" | "Confirmed" | "In Progress" | "To Close" | "Done" | "Cancelled"
   dueDate: string
-  assignee: string
+  assignee?: {
+    _id: string
+    username: string
+    email: string
+    role: string
+  }
   progress: number
 }
 
@@ -204,13 +209,13 @@ export default function DashboardPage() {
                 </TableHeader>
                 <TableBody>
                   {filteredOrders.map((order) => (
-                    <TableRow key={order.id} className="cursor-pointer hover:bg-muted/50">
+                    <TableRow key={order._id} className="cursor-pointer hover:bg-muted/50">
                       <TableCell className="font-medium">{order.reference}</TableCell>
                       <TableCell>{order.finishedProduct}</TableCell>
                       <TableCell>{order.quantity}</TableCell>
                       <TableCell>{getStatusBadge(order.status)}</TableCell>
                       <TableCell>{new Date(order.dueDate).toLocaleDateString()}</TableCell>
-                      <TableCell>{order.assignee}</TableCell>
+                      <TableCell>{order.assignee?.username || "Unassigned"}</TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2">
                           <div className="flex-1 bg-muted rounded-full h-2">

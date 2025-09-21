@@ -106,7 +106,7 @@ export default function WorkOrderDetailPage() {
 
   useEffect(() => {
     // Check authentication
-    const user = localStorage.getItem("flowforge_user")
+    const user = localStorage.getItem("prodease_user")
     if (!user) {
       router.push("/auth/login")
       return

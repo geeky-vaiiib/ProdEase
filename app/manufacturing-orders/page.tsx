@@ -27,7 +27,7 @@ export default function ManufacturingOrdersPage() {
   const [searchQuery, setSearchQuery] = useState("")
   const router = useRouter()
   const { user } = useAuth()
-  const { orders, isLoading, error, updateOrder, updateOrderStatus, deleteOrder, clearError } = useData()
+  const { manufacturingOrders: orders, isLoading, error, updateOrder, updateOrderStatus, deleteOrder, clearError } = useData()
 
   // Check authentication
   useEffect(() => {
@@ -229,7 +229,7 @@ export default function ManufacturingOrdersPage() {
                       </TableCell>
                       <TableCell>
                         <EditableField
-                          value={order.assignee || ""}
+                          value={order.assignee?.username || "Unassigned"}
                           onSave={(value) => handleFieldUpdate(order._id, "assignee", value)}
                         />
                       </TableCell>
