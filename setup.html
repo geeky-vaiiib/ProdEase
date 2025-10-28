@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Setup ProdEase Test Data</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background: #1a1a1a; color: white; }
+        .container { max-width: 600px; margin: 0 auto; }
+        button { background: #3b82f6; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; }
+        button:hover { background: #2563eb; }
+        .result { margin-top: 20px; padding: 10px; background: #2a2a2a; border-radius: 5px; }
+        .success { color: #10b981; }
+        .error { color: #ef4444; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 ProdEase Setup</h1>
+        <p>Click the button below to create test data for the ProdEase system.</p>
+        <button onclick="setupData()">Create Test Data</button>
+        <div id="result" class="result" style="display: none;"></div>
+    </div>
+
+    <script>
+        async function setupData() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.style.display = 'block';
+            resultDiv.innerHTML = '⏳ Creating test data...';
+            
+            try {
+                const response = await fetch('http://localhost:5003/api/setup', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    resultDiv.className = 'result success';
+                    resultDiv.innerHTML = `
+                        <h3>✅ Success!</h3>
+                        <p>${data.message}</p>
+                        <p><strong>Test Credentials:</strong></p>
+                        <ul>
+                            <li>Admin: admin@prodease.com / Admin@123</li>
+                            <li>Operator: operator@prodease.com / Test@123</li>
+                        </ul>
+                        <p><a href="http://localhost:3000" style="color: #3b82f6;">Go to ProdEase App</a></p>
+                    `;
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.innerHTML = `<h3>❌ Error</h3><p>${data.message}</p>`;
+                }
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = `<h3>❌ Error</h3><p>Failed to setup data: ${error.message}</p>`;
+            }
+        }
+    </script>
+</body>
+</html>

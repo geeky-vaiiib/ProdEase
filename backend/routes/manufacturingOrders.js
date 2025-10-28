@@ -1,8 +1,16 @@
 const express = require('express');
 const router = express.Router();
 const ManufacturingOrder = require('../models/ManufacturingOrder');
+const BillOfMaterials = require('../models/BillOfMaterials');
 const { protect, authorize } = require('../middleware/auth');
 const { validate, manufacturingOrderSchemas } = require('../middleware/validation');
+const {
+  generateWorkOrdersFromMO,
+  reserveMaterialsForMO,
+  completeManufacturingOrder,
+  createMOFromBOM,
+  updateMOProgress
+} = require('../utils/manufacturingFlow');
 
 // @desc    Get all manufacturing orders
 // @route   GET /api/manufacturing-orders
@@ -258,6 +266,125 @@ router.patch('/:id/status', protect, async (req, res, next) => {
     res.status(200).json({
       success: true,
       message: 'Manufacturing order status updated successfully',
+      data: manufacturingOrder
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// @desc    Create manufacturing order from BOM
+// @route   POST /api/manufacturing-orders/from-bom/:bomId
+// @access  Private (Manager, Admin)
+router.post('/from-bom/:bomId', protect, authorize('manager', 'admin'), async (req, res, next) => {
+  try {
+    console.log('Creating MO from BOM:', req.params.bomId);
+    const { quantity, scheduledStartDate, dueDate, assignee, priority, notes } = req.body;
+
+    if (!quantity || !scheduledStartDate || !dueDate || !assignee) {
+      return res.status(400).json({
+        success: false,
+        message: 'Quantity, scheduled start date, due date, and assignee are required'
+      });
+    }
+
+    const moData = {
+      quantity,
+      scheduledStartDate,
+      dueDate,
+      assignee,
+      priority: priority || 'Medium',
+      notes,
+      status: 'Draft'
+    };
+
+    console.log('MO Data:', moData);
+
+    const manufacturingOrder = await createMOFromBOM(req.params.bomId, moData, req.user.id);
+
+    // Populate the created order
+    await manufacturingOrder.populate('assignee', 'username email role');
+    await manufacturingOrder.populate('createdBy', 'username email');
+    await manufacturingOrder.populate('bomId');
+
+    res.status(201).json({
+      success: true,
+      message: 'Manufacturing order created from BOM successfully',
+      data: manufacturingOrder
+    });
+  } catch (error) {
+    console.error('Error in route:', error);
+    next(error);
+  }
+});
+
+// @desc    Generate work orders for manufacturing order
+// @route   POST /api/manufacturing-orders/:id/generate-work-orders
+// @access  Private (Manager, Admin)
+router.post('/:id/generate-work-orders', protect, authorize('manager', 'admin'), async (req, res, next) => {
+  try {
+    const workOrders = await generateWorkOrdersFromMO(req.params.id, req.user.id);
+
+    res.status(200).json({
+      success: true,
+      message: `${workOrders.length} work orders generated successfully`,
+      data: workOrders
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// @desc    Reserve materials for manufacturing order
+// @route   POST /api/manufacturing-orders/:id/reserve-materials
+// @access  Private (Manager, Admin)
+router.post('/:id/reserve-materials', protect, authorize('manager', 'admin'), async (req, res, next) => {
+  try {
+    const reservations = await reserveMaterialsForMO(req.params.id, req.user.id);
+
+    res.status(200).json({
+      success: true,
+      message: 'Materials reserved successfully',
+      data: reservations
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// @desc    Complete manufacturing order
+// @route   POST /api/manufacturing-orders/:id/complete
+// @access  Private (Manager, Admin)
+router.post('/:id/complete', protect, authorize('manager', 'admin'), async (req, res, next) => {
+  try {
+    const manufacturingOrder = await completeManufacturingOrder(req.params.id, req.user.id);
+
+    await manufacturingOrder.populate('assignee', 'username email role');
+    await manufacturingOrder.populate('workOrders');
+
+    res.status(200).json({
+      success: true,
+      message: 'Manufacturing order completed successfully',
+      data: manufacturingOrder
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// @desc    Update manufacturing order progress
+// @route   PATCH /api/manufacturing-orders/:id/update-progress
+// @access  Private
+router.patch('/:id/update-progress', protect, async (req, res, next) => {
+  try {
+    const manufacturingOrder = await updateMOProgress(req.params.id);
+
+    await manufacturingOrder.populate('assignee', 'username email role');
+    await manufacturingOrder.populate('workOrders');
+
+    res.status(200).json({
+      success: true,
+      message: 'Manufacturing order progress updated successfully',
       data: manufacturingOrder
     });
   } catch (error) {

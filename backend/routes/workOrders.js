@@ -4,6 +4,7 @@ const WorkOrder = require('../models/WorkOrder');
 const ManufacturingOrder = require('../models/ManufacturingOrder');
 const { protect, authorize } = require('../middleware/auth');
 const { validate, workOrderSchemas } = require('../middleware/validation');
+const { consumeMaterialsForWO, updateMOProgress } = require('../utils/manufacturingFlow');
 
 // @desc    Get all work orders
 // @route   GET /api/work-orders
@@ -237,8 +238,8 @@ router.patch('/:id/start', protect, async (req, res, next) => {
 // @access  Private
 router.patch('/:id/complete', protect, async (req, res, next) => {
   try {
-    const { realDuration, qualityCheck } = req.body;
-    
+    const { realDuration, qualityCheck, materials } = req.body;
+
     const workOrder = await WorkOrder.findById(req.params.id);
 
     if (!workOrder) {
@@ -263,19 +264,49 @@ router.patch('/:id/complete', protect, async (req, res, next) => {
       });
     }
 
+    // Update work order with completion data
     workOrder.status = 'Completed';
     workOrder.endTime = new Date();
     if (realDuration) workOrder.realDuration = realDuration;
     if (qualityCheck) workOrder.qualityCheck = qualityCheck;
+
+    // Update material consumption if provided
+    if (materials && Array.isArray(materials)) {
+      materials.forEach(material => {
+        const woMaterial = workOrder.materials.find(m => m.materialId.toString() === material.materialId);
+        if (woMaterial) {
+          woMaterial.quantityConsumed = material.quantityConsumed || woMaterial.quantityRequired;
+          woMaterial.quantityScrapped = material.quantityScrapped || 0;
+        }
+      });
+    }
+
     workOrder.updatedBy = req.user.id;
-    
     await workOrder.save();
 
-    res.status(200).json({
-      success: true,
-      message: 'Work order completed successfully',
-      data: workOrder
-    });
+    // Consume materials automatically
+    try {
+      const consumptions = await consumeMaterialsForWO(req.params.id, req.user.id);
+
+      // Update manufacturing order progress
+      await updateMOProgress(workOrder.manufacturingOrderId.toString());
+
+      res.status(200).json({
+        success: true,
+        message: 'Work order completed successfully',
+        data: workOrder,
+        materialConsumptions: consumptions
+      });
+    } catch (consumptionError) {
+      // Log the error but still return success for work order completion
+      console.error('Material consumption error:', consumptionError);
+      res.status(200).json({
+        success: true,
+        message: 'Work order completed successfully. Note: Material consumption failed.',
+        data: workOrder,
+        error: consumptionError.message
+      });
+    }
   } catch (error) {
     next(error);
   }

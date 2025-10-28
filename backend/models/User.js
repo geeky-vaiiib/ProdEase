@@ -24,8 +24,42 @@ const userSchema = new mongoose.Schema({
   },
   role: {
     type: String,
-    enum: ['manager', 'operator', 'inventory', 'admin'],
+    enum: ['admin', 'manager', 'supervisor', 'operator', 'inventory', 'quality'],
     default: 'operator'
+  },
+  permissions: {
+    canCreateMO: {
+      type: Boolean,
+      default: false
+    },
+    canApproveMO: {
+      type: Boolean,
+      default: false
+    },
+    canStartWO: {
+      type: Boolean,
+      default: false
+    },
+    canCompleteWO: {
+      type: Boolean,
+      default: false
+    },
+    canManageMaterials: {
+      type: Boolean,
+      default: false
+    },
+    canManageBOM: {
+      type: Boolean,
+      default: false
+    },
+    canViewReports: {
+      type: Boolean,
+      default: false
+    },
+    canManageUsers: {
+      type: Boolean,
+      default: false
+    }
   },
   avatarUrl: {
     type: String,
@@ -93,6 +127,76 @@ userSchema.methods.verifyOTP = function(otp) {
 userSchema.methods.clearOTP = function() {
   this.otpCode = null;
   this.otpExpiry = null;
+};
+
+// Set permissions based on role
+userSchema.methods.setPermissionsByRole = function() {
+  const rolePermissions = {
+    admin: {
+      canCreateMO: true,
+      canApproveMO: true,
+      canStartWO: true,
+      canCompleteWO: true,
+      canManageMaterials: true,
+      canManageBOM: true,
+      canViewReports: true,
+      canManageUsers: true
+    },
+    manager: {
+      canCreateMO: true,
+      canApproveMO: true,
+      canStartWO: true,
+      canCompleteWO: true,
+      canManageMaterials: true,
+      canManageBOM: true,
+      canViewReports: true,
+      canManageUsers: false
+    },
+    supervisor: {
+      canCreateMO: true,
+      canApproveMO: false,
+      canStartWO: true,
+      canCompleteWO: true,
+      canManageMaterials: false,
+      canManageBOM: false,
+      canViewReports: true,
+      canManageUsers: false
+    },
+    operator: {
+      canCreateMO: false,
+      canApproveMO: false,
+      canStartWO: true,
+      canCompleteWO: true,
+      canManageMaterials: false,
+      canManageBOM: false,
+      canViewReports: false,
+      canManageUsers: false
+    },
+    inventory: {
+      canCreateMO: false,
+      canApproveMO: false,
+      canStartWO: false,
+      canCompleteWO: false,
+      canManageMaterials: true,
+      canManageBOM: false,
+      canViewReports: true,
+      canManageUsers: false
+    },
+    quality: {
+      canCreateMO: false,
+      canApproveMO: false,
+      canStartWO: false,
+      canCompleteWO: false,
+      canManageMaterials: false,
+      canManageBOM: false,
+      canViewReports: true,
+      canManageUsers: false
+    }
+  };
+
+  if (rolePermissions[this.role]) {
+    this.permissions = { ...this.permissions, ...rolePermissions[this.role] };
+  }
 };
 
 // Transform output

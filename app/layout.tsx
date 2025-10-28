@@ -15,6 +15,11 @@ export const metadata: Metadata = {
   title: "ProdEase - Manufacturing Management System",
   description: "Digital manufacturing workflow management and production tracking",
   generator: "ProdEase",
+  manifest: "/manifest.json",
+  icons: {
+    icon: "/prodease-logo.svg",
+    shortcut: "/prodease-logo.svg",
+  },
 }
 
 export default function RootLayout({

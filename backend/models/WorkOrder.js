@@ -94,14 +94,36 @@ const workOrderSchema = new mongoose.Schema({
   materials: [{
     materialId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'Material'
+      ref: 'Material',
+      required: true
     },
-    name: String,
-    quantityUsed: {
+    name: {
+      type: String,
+      required: true
+    },
+    quantityRequired: {
       type: Number,
+      required: true,
+      min: 0.001
+    },
+    quantityConsumed: {
+      type: Number,
+      default: 0,
       min: 0
     },
-    unit: String
+    quantityScrapped: {
+      type: Number,
+      default: 0,
+      min: 0
+    },
+    unit: {
+      type: String,
+      required: true
+    },
+    unitCost: {
+      type: Number,
+      default: 0
+    }
   }],
   createdBy: {
     type: mongoose.Schema.Types.ObjectId,

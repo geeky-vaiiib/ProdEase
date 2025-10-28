@@ -115,17 +115,18 @@ const workOrderSchemas = {
 // BOM validation schemas
 const bomSchemas = {
   create: Joi.object({
+    reference: Joi.string().optional(),
     finishedProduct: Joi.string().required(),
     version: Joi.string().default('1.0'),
     description: Joi.string().max(1000).optional(),
     components: Joi.array().items(Joi.object({
-      materialId: Joi.string().optional(),
+      materialId: Joi.string().required(),
       name: Joi.string().required(),
-      quantity: Joi.number().min(0).required(),
+      quantity: Joi.number().min(0.001).required(),
       unit: Joi.string().required(),
       unitCost: Joi.number().min(0).default(0),
-      supplier: Joi.string().optional(),
-      leadTime: Joi.number().min(0).default(0)
+      wastePercentage: Joi.number().min(0).max(100).default(0),
+      notes: Joi.string().max(200).optional()
     })).default([]),
     operations: Joi.array().items(Joi.object({
       sequence: Joi.number().min(1).required(),
@@ -138,6 +139,35 @@ const bomSchemas = {
     })).default([]),
     totalQuantity: Joi.number().min(1).default(1),
     unit: Joi.string().default('pcs'),
+    category: Joi.string().optional()
+  }),
+
+  update: Joi.object({
+    reference: Joi.string().optional(),
+    finishedProduct: Joi.string().optional(),
+    version: Joi.string().optional(),
+    description: Joi.string().max(1000).optional(),
+    status: Joi.string().valid('Draft', 'Active', 'Archived').optional(),
+    components: Joi.array().items(Joi.object({
+      materialId: Joi.string().required(),
+      name: Joi.string().required(),
+      quantity: Joi.number().min(0.001).optional(),
+      unit: Joi.string().optional(),
+      unitCost: Joi.number().min(0).optional(),
+      wastePercentage: Joi.number().min(0).max(100).optional(),
+      notes: Joi.string().max(200).optional()
+    })).optional(),
+    operations: Joi.array().items(Joi.object({
+      sequence: Joi.number().min(1).optional(),
+      name: Joi.string().optional(),
+      workCenter: Joi.string().optional(),
+      duration: Joi.number().min(1).optional(),
+      setupTime: Joi.number().min(0).optional(),
+      description: Joi.string().max(500).optional(),
+      skillRequired: Joi.string().optional()
+    })).optional(),
+    totalQuantity: Joi.number().min(1).optional(),
+    unit: Joi.string().optional(),
     category: Joi.string().optional()
   })
 };
@@ -166,11 +196,129 @@ const workCenterSchemas = {
   })
 };
 
+// Material validation schemas
+const materialSchemas = {
+  create: Joi.object({
+    code: Joi.string().optional(),
+    name: Joi.string().required(),
+    description: Joi.string().max(1000).optional(),
+    category: Joi.string().valid('Raw Material', 'Component', 'Finished Good', 'Consumable', 'Tool').required(),
+    subcategory: Joi.string().optional(),
+    unit: Joi.string().valid('pcs', 'kg', 'm', 'l', 'm2', 'm3', 'box', 'pack', 'set').required(),
+    specifications: Joi.object({
+      weight: Joi.number().optional(),
+      dimensions: Joi.object({
+        length: Joi.number().optional(),
+        width: Joi.number().optional(),
+        height: Joi.number().optional()
+      }).optional(),
+      color: Joi.string().optional(),
+      grade: Joi.string().optional(),
+      standard: Joi.string().optional()
+    }).optional(),
+    suppliers: Joi.array().items(Joi.object({
+      name: Joi.string().required(),
+      code: Joi.string().optional(),
+      leadTime: Joi.number().min(0).default(7),
+      minOrderQuantity: Joi.number().min(1).default(1),
+      unitCost: Joi.number().min(0).default(0),
+      currency: Joi.string().default('USD'),
+      contact: Joi.object({
+        email: Joi.string().email().optional(),
+        phone: Joi.string().optional()
+      }).optional()
+    })).default([]),
+    inventory: Joi.object({
+      currentStock: Joi.number().min(0).default(0),
+      reorderLevel: Joi.number().min(0).default(0),
+      maxStock: Joi.number().min(0).default(1000),
+      averageCost: Joi.number().min(0).default(0),
+      lastCost: Joi.number().min(0).default(0)
+    }).default({}),
+    location: Joi.object({
+      warehouse: Joi.string().default('Main Warehouse'),
+      zone: Joi.string().optional(),
+      bin: Joi.string().optional(),
+      shelf: Joi.string().optional()
+    }).default({}),
+    status: Joi.string().valid('Active', 'Inactive', 'Discontinued', 'Obsolete').default('Active'),
+    quality: Joi.object({
+      requiresInspection: Joi.boolean().default(false),
+      shelfLife: Joi.number().optional(),
+      expiryDate: Joi.date().optional(),
+      batchTracking: Joi.boolean().default(false)
+    }).default({}),
+    cost: Joi.object({
+      standardCost: Joi.number().min(0).default(0),
+      lastPurchaseCost: Joi.number().min(0).default(0),
+      movingAverageCost: Joi.number().min(0).default(0)
+    }).default({})
+  }),
+
+  update: Joi.object({
+    code: Joi.string().optional(),
+    name: Joi.string().optional(),
+    description: Joi.string().max(1000).optional(),
+    category: Joi.string().valid('Raw Material', 'Component', 'Finished Good', 'Consumable', 'Tool').optional(),
+    subcategory: Joi.string().optional(),
+    unit: Joi.string().valid('pcs', 'kg', 'm', 'l', 'm2', 'm3', 'box', 'pack', 'set').optional(),
+    specifications: Joi.object({
+      weight: Joi.number().optional(),
+      dimensions: Joi.object({
+        length: Joi.number().optional(),
+        width: Joi.number().optional(),
+        height: Joi.number().optional()
+      }).optional(),
+      color: Joi.string().optional(),
+      grade: Joi.string().optional(),
+      standard: Joi.string().optional()
+    }).optional(),
+    suppliers: Joi.array().items(Joi.object({
+      name: Joi.string().required(),
+      code: Joi.string().optional(),
+      leadTime: Joi.number().min(0).default(7),
+      minOrderQuantity: Joi.number().min(1).default(1),
+      unitCost: Joi.number().min(0).default(0),
+      currency: Joi.string().default('USD'),
+      contact: Joi.object({
+        email: Joi.string().email().optional(),
+        phone: Joi.string().optional()
+      }).optional()
+    })).optional(),
+    inventory: Joi.object({
+      currentStock: Joi.number().min(0).optional(),
+      reorderLevel: Joi.number().min(0).optional(),
+      maxStock: Joi.number().min(0).optional(),
+      averageCost: Joi.number().min(0).optional(),
+      lastCost: Joi.number().min(0).optional()
+    }).optional(),
+    location: Joi.object({
+      warehouse: Joi.string().optional(),
+      zone: Joi.string().optional(),
+      bin: Joi.string().optional(),
+      shelf: Joi.string().optional()
+    }).optional(),
+    status: Joi.string().valid('Active', 'Inactive', 'Discontinued', 'Obsolete').optional(),
+    quality: Joi.object({
+      requiresInspection: Joi.boolean().optional(),
+      shelfLife: Joi.number().optional(),
+      expiryDate: Joi.date().optional(),
+      batchTracking: Joi.boolean().optional()
+    }).optional(),
+    cost: Joi.object({
+      standardCost: Joi.number().min(0).optional(),
+      lastPurchaseCost: Joi.number().min(0).optional(),
+      movingAverageCost: Joi.number().min(0).optional()
+    }).optional()
+  })
+};
+
 module.exports = {
   validate,
   authSchemas,
   manufacturingOrderSchemas,
   workOrderSchemas,
   bomSchemas,
-  workCenterSchemas
+  workCenterSchemas,
+  materialSchemas
 };

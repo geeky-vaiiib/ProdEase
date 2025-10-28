@@ -3,16 +3,13 @@ const mongoose = require('mongoose');
 const componentSchema = new mongoose.Schema({
   materialId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Material'
-  },
-  name: {
-    type: String,
+    ref: 'Material',
     required: true
   },
   quantity: {
     type: Number,
     required: true,
-    min: 0
+    min: 0.001
   },
   unit: {
     type: String,
@@ -23,12 +20,15 @@ const componentSchema = new mongoose.Schema({
     default: 0,
     min: 0
   },
-  supplier: {
-    type: String
+  wastePercentage: {
+    type: Number,
+    default: 0,
+    min: 0,
+    max: 100
   },
-  leadTime: {
-    type: Number, // in days
-    default: 0
+  notes: {
+    type: String,
+    maxlength: 200
   }
 });
 
@@ -68,9 +68,12 @@ const operationSchema = new mongoose.Schema({
 const billOfMaterialsSchema = new mongoose.Schema({
   reference: {
     type: String,
-    required: [true, 'Reference is required'],
     unique: true,
-    uppercase: true
+    uppercase: true,
+    required: false,
+    default: function() {
+      return `BOM-${new Date().getFullYear()}-${String(Math.floor(Math.random() * 1000)).padStart(3, '0')}`;
+    }
   },
   finishedProduct: {
     type: String,

@@ -4,76 +4,90 @@
 /* Removed @custom-variant dark configuration that was causing utility class errors */
 
 :root {
-  /* Light theme colors */
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.09 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.09 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.09 0 0);
-  --primary: oklch(0.4 0.15 240);
-  --primary-foreground: oklch(0.98 0 0);
-  --secondary: oklch(0.96 0 0);
-  --secondary-foreground: oklch(0.09 0 0);
-  --muted: oklch(0.96 0 0);
-  --muted-foreground: oklch(0.45 0 0);
-  --accent: oklch(0.96 0 0);
-  --accent-foreground: oklch(0.09 0 0);
-  --destructive: oklch(0.6 0.2 25);
-  --destructive-foreground: oklch(0.98 0 0);
-  --border: oklch(0.9 0 0);
-  --input: oklch(0.96 0 0);
-  --ring: oklch(0.4 0.15 240);
-  --chart-1: oklch(0.4 0.15 240);
-  --chart-2: oklch(0.35 0.2 160);
-  --chart-3: oklch(0.3 0.25 60);
-  --chart-4: oklch(0.45 0.15 300);
-  --chart-5: oklch(0.4 0.2 20);
+  /* Light theme colors - Enhanced with subtle manufacturing theme */
+  --background: oklch(0.99 0.005 240);
+  --foreground: oklch(0.15 0.01 240);
+  --card: oklch(0.98 0.005 240);
+  --card-foreground: oklch(0.15 0.01 240);
+  --popover: oklch(0.98 0.005 240);
+  --popover-foreground: oklch(0.15 0.01 240);
+  --primary: oklch(0.55 0.08 240);
+  --primary-foreground: oklch(0.98 0.005 240);
+  --secondary: oklch(0.94 0.01 240);
+  --secondary-foreground: oklch(0.15 0.01 240);
+  --muted: oklch(0.94 0.01 240);
+  --muted-foreground: oklch(0.5 0.02 240);
+  --accent: oklch(0.92 0.02 180);
+  --accent-foreground: oklch(0.15 0.01 240);
+  --destructive: oklch(0.65 0.15 25);
+  --destructive-foreground: oklch(0.98 0.005 240);
+  --border: oklch(0.88 0.01 240);
+  --input: oklch(0.94 0.01 240);
+  --ring: oklch(0.55 0.08 240);
+  --chart-1: oklch(0.55 0.08 240);
+  --chart-2: oklch(0.5 0.1 180);
+  --chart-3: oklch(0.45 0.12 120);
+  --chart-4: oklch(0.6 0.08 300);
+  --chart-5: oklch(0.5 0.1 60);
   --radius: 0.5rem;
-  --sidebar: oklch(0.98 0 0);
-  --sidebar-foreground: oklch(0.09 0 0);
-  --sidebar-primary: oklch(0.4 0.15 240);
-  --sidebar-primary-foreground: oklch(0.98 0 0);
-  --sidebar-accent: oklch(0.96 0 0);
-  --sidebar-accent-foreground: oklch(0.09 0 0);
-  --sidebar-border: oklch(0.9 0 0);
-  --sidebar-ring: oklch(0.4 0.15 240);
+  --sidebar: oklch(0.96 0.005 240);
+  --sidebar-foreground: oklch(0.15 0.01 240);
+  --sidebar-primary: oklch(0.55 0.08 240);
+  --sidebar-primary-foreground: oklch(0.98 0.005 240);
+  --sidebar-accent: oklch(0.92 0.02 180);
+  --sidebar-accent-foreground: oklch(0.15 0.01 240);
+  --sidebar-border: oklch(0.88 0.01 240);
+  --sidebar-ring: oklch(0.55 0.08 240);
+
+  /* Manufacturing theme colors */
+  --manufacturing-primary: oklch(0.6 0.06 220);
+  --manufacturing-secondary: oklch(0.55 0.08 180);
+  --manufacturing-accent: oklch(0.5 0.1 120);
+  --manufacturing-muted: oklch(0.45 0.05 60);
+  --manufacturing-surface: oklch(0.96 0.005 240);
 }
 
 .dark {
-  /* Dark theme colors */
-  --background: oklch(0.08 0 0);
-  --foreground: oklch(0.98 0 0);
-  --card: oklch(0.12 0 0);
-  --card-foreground: oklch(0.98 0 0);
-  --popover: oklch(0.12 0 0);
-  --popover-foreground: oklch(0.98 0 0);
-  --primary: oklch(0.7 0.15 240);
-  --primary-foreground: oklch(0.98 0 0);
-  --secondary: oklch(0.18 0 0);
-  --secondary-foreground: oklch(0.98 0 0);
-  --muted: oklch(0.15 0 0);
-  --muted-foreground: oklch(0.65 0 0);
-  --accent: oklch(0.18 0 0);
-  --accent-foreground: oklch(0.98 0 0);
-  --destructive: oklch(0.6 0.2 25);
-  --destructive-foreground: oklch(0.98 0 0);
-  --border: oklch(0.2 0 0);
-  --input: oklch(0.15 0 0);
-  --ring: oklch(0.7 0.15 240);
-  --chart-1: oklch(0.7 0.15 240);
-  --chart-2: oklch(0.65 0.2 160);
-  --chart-3: oklch(0.6 0.25 60);
-  --chart-4: oklch(0.75 0.15 300);
-  --chart-5: oklch(0.7 0.2 20);
-  --sidebar: oklch(0.1 0 0);
-  --sidebar-foreground: oklch(0.98 0 0);
-  --sidebar-primary: oklch(0.7 0.15 240);
-  --sidebar-primary-foreground: oklch(0.98 0 0);
-  --sidebar-accent: oklch(0.15 0 0);
-  --sidebar-accent-foreground: oklch(0.98 0 0);
-  --sidebar-border: oklch(0.2 0 0);
-  --sidebar-ring: oklch(0.7 0.15 240);
+  /* Dark theme colors - Enhanced with subtle manufacturing theme */
+  --background: oklch(0.08 0.005 240);
+  --foreground: oklch(0.95 0.01 240);
+  --card: oklch(0.12 0.01 240);
+  --card-foreground: oklch(0.95 0.01 240);
+  --popover: oklch(0.12 0.01 240);
+  --popover-foreground: oklch(0.95 0.01 240);
+  --primary: oklch(0.65 0.08 240);
+  --primary-foreground: oklch(0.08 0.005 240);
+  --secondary: oklch(0.18 0.01 240);
+  --secondary-foreground: oklch(0.95 0.01 240);
+  --muted: oklch(0.15 0.01 240);
+  --muted-foreground: oklch(0.6 0.02 240);
+  --accent: oklch(0.2 0.02 180);
+  --accent-foreground: oklch(0.95 0.01 240);
+  --destructive: oklch(0.65 0.15 25);
+  --destructive-foreground: oklch(0.08 0.005 240);
+  --border: oklch(0.22 0.01 240);
+  --input: oklch(0.15 0.01 240);
+  --ring: oklch(0.65 0.08 240);
+  --chart-1: oklch(0.65 0.08 240);
+  --chart-2: oklch(0.6 0.1 180);
+  --chart-3: oklch(0.55 0.12 120);
+  --chart-4: oklch(0.7 0.08 300);
+  --chart-5: oklch(0.6 0.1 60);
+  --sidebar: oklch(0.1 0.005 240);
+  --sidebar-foreground: oklch(0.95 0.01 240);
+  --sidebar-primary: oklch(0.65 0.08 240);
+  --sidebar-primary-foreground: oklch(0.08 0.005 240);
+  --sidebar-accent: oklch(0.2 0.02 180);
+  --sidebar-accent-foreground: oklch(0.95 0.01 240);
+  --sidebar-border: oklch(0.22 0.01 240);
+  --sidebar-ring: oklch(0.65 0.08 240);
+
+  /* Manufacturing theme colors for dark mode */
+  --manufacturing-primary: oklch(0.7 0.06 220);
+  --manufacturing-secondary: oklch(0.65 0.08 180);
+  --manufacturing-accent: oklch(0.6 0.1 120);
+  --manufacturing-muted: oklch(0.55 0.05 60);
+  --manufacturing-surface: oklch(0.12 0.01 240);
 }
 
 @theme inline {
@@ -115,6 +129,11 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
+  --color-manufacturing-primary: var(--manufacturing-primary);
+  --color-manufacturing-secondary: var(--manufacturing-secondary);
+  --color-manufacturing-accent: var(--manufacturing-accent);
+  --color-manufacturing-muted: var(--manufacturing-muted);
+  --color-manufacturing-surface: var(--manufacturing-surface);
 }
 
 @layer base {
@@ -125,4 +144,22 @@
     @apply bg-background text-foreground;
   }
   /* Removed html dark class application that was causing issues */
+}
+
+@layer utilities {
+  /* Simple pulse animation for floating elements */
+  @keyframes float {
+    0%, 100% {
+      opacity: 0.3;
+      transform: translateY(0px);
+    }
+    50% {
+      opacity: 0.7;
+      transform: translateY(-5px);
+    }
+  }
+
+  .animate-float {
+    animation: float 3s ease-in-out infinite;
+  }
 }

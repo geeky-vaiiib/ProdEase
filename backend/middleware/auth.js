@@ -66,6 +66,44 @@ const authorize = (...roles) => {
   };
 };
 
+// Grant access based on specific permissions
+const requirePermission = (permission) => {
+  return (req, res, next) => {
+    if (!req.user.permissions || !req.user.permissions[permission]) {
+      return res.status(403).json({
+        success: false,
+        message: `User does not have permission: ${permission}`
+      });
+    }
+    next();
+  };
+};
+
+// Grant access if user has any of the specified permissions
+const requireAnyPermission = (...permissions) => {
+  return (req, res, next) => {
+    const hasPermission = permissions.some(permission =>
+      req.user.permissions && req.user.permissions[permission]
+    );
+
+    if (!hasPermission) {
+      return res.status(403).json({
+        success: false,
+        message: `User does not have any of the required permissions: ${permissions.join(', ')}`
+      });
+    }
+    next();
+  };
+};
+
+// Check if user has permission (doesn't block if no permission)
+const hasPermission = (permission) => {
+  return (req, res, next) => {
+    req.userHasPermission = req.user.permissions && req.user.permissions[permission];
+    next();
+  };
+};
+
 // Optional auth - doesn't fail if no token
 const optionalAuth = async (req, res, next) => {
   try {
@@ -98,5 +136,8 @@ const optionalAuth = async (req, res, next) => {
 module.exports = {
   protect,
   authorize,
+  requirePermission,
+  requireAnyPermission,
+  hasPermission,
   optionalAuth
 };

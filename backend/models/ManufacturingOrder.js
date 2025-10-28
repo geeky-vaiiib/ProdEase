@@ -4,15 +4,25 @@ const componentSchema = new mongoose.Schema({
   materialId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Material',
-    required: false
+    required: true
   },
   name: {
     type: String,
     required: true
   },
-  quantity: {
+  quantityRequired: {
     type: Number,
     required: true,
+    min: 0.001
+  },
+  quantityReserved: {
+    type: Number,
+    default: 0,
+    min: 0
+  },
+  quantityConsumed: {
+    type: Number,
+    default: 0,
     min: 0
   },
   unit: {
@@ -22,6 +32,12 @@ const componentSchema = new mongoose.Schema({
   unitCost: {
     type: Number,
     default: 0
+  },
+  wastePercentage: {
+    type: Number,
+    default: 0,
+    min: 0,
+    max: 100
   }
 });
 
