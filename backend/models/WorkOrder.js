@@ -22,7 +22,8 @@ const workOrderSchema = new mongoose.Schema({
     type: String,
     required: [true, 'Reference is required'],
     unique: true,
-    uppercase: true
+    uppercase: true,
+    sparse: true
   },
   manufacturingOrderId: {
     type: mongoose.Schema.Types.ObjectId,
@@ -53,9 +54,19 @@ const workOrderSchema = new mongoose.Schema({
     default: 0,
     min: 0
   },
+  setupTime: {
+    type: Number, // in minutes
+    default: 0,
+    min: 0
+  },
+  teardownTime: {
+    type: Number, // in minutes
+    default: 0,
+    min: 0
+  },
   status: {
     type: String,
-    enum: ['Pending', 'In Progress', 'Paused', 'Completed', 'Cancelled'],
+    enum: ['Pending', 'Ready', 'In Progress', 'Paused', 'Completed', 'Cancelled', 'Failed'],
     default: 'Pending'
   },
   assignee: {
@@ -73,7 +84,17 @@ const workOrderSchema = new mongoose.Schema({
     type: Number, // total paused time in minutes
     default: 0
   },
+  pauseHistory: [{
+    pausedAt: Date,
+    resumedAt: Date,
+    reason: String,
+    duration: Number // in minutes
+  }],
   qualityCheck: {
+    required: {
+      type: Boolean,
+      default: false
+    },
     passed: {
       type: Boolean,
       default: null
@@ -88,7 +109,15 @@ const workOrderSchema = new mongoose.Schema({
     notes: {
       type: String,
       maxlength: 500
-    }
+    },
+    defectsFound: [{
+      type: String,
+      description: String,
+      severity: {
+        type: String,
+        enum: ['Minor', 'Major', 'Critical']
+      }
+    }]
   },
   comments: [commentSchema],
   materials: [{
@@ -125,6 +154,18 @@ const workOrderSchema = new mongoose.Schema({
       default: 0
     }
   }],
+  tools: [{
+    name: String,
+    code: String
+  }],
+  skillLevel: {
+    type: String,
+    enum: ['Beginner', 'Intermediate', 'Advanced', 'Expert']
+  },
+  safetyCheckCompleted: {
+    type: Boolean,
+    default: false
+  },
   createdBy: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
@@ -154,8 +195,15 @@ workOrderSchema.pre('save', async function(next) {
         $lt: new Date(year + 1, 0, 1)
       }
     });
-    this.reference = `WO-${year}-${String(count + 1).padStart(3, '0')}`;
+    this.reference = `WO-${year}-${String(count + 1).padStart(4, '0')}`;
   }
+
+  // Calculate real duration if start and end times are set
+  if (this.startTime && this.endTime && !this.realDuration) {
+    const totalMinutes = Math.ceil((this.endTime - this.startTime) / (1000 * 60));
+    this.realDuration = Math.max(0, totalMinutes - this.pausedTime);
+  }
+
   next();
 });
 
@@ -174,6 +222,19 @@ workOrderSchema.virtual('actualDuration').get(function() {
     return Math.max(0, totalTime - this.pausedTime);
   }
   return null;
+});
+
+// Virtual for cost
+workOrderSchema.virtual('cost').get(function() {
+  return this.materials.reduce((total, material) => {
+    return total + ((material.quantityConsumed + material.quantityScrapped) * material.unitCost);
+  }, 0);
+});
+
+// Virtual for on-time status
+workOrderSchema.virtual('isOnTime').get(function() {
+  if (!this.expectedDuration || !this.realDuration) return null;
+  return this.realDuration <= this.expectedDuration;
 });
 
 workOrderSchema.set('toJSON', { virtuals: true });

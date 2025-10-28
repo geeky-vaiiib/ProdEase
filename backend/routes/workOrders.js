@@ -4,7 +4,7 @@ const WorkOrder = require('../models/WorkOrder');
 const ManufacturingOrder = require('../models/ManufacturingOrder');
 const { protect, authorize } = require('../middleware/auth');
 const { validate, workOrderSchemas } = require('../middleware/validation');
-const { consumeMaterialsForWO, updateMOProgress } = require('../utils/manufacturingFlow');
+const { consumeMaterialsForWO, updateMOProgress, updateNextWorkOrderStatus } = require('../utils/manufacturingFlow');
 
 // @desc    Get all work orders
 // @route   GET /api/work-orders
@@ -268,7 +268,7 @@ router.patch('/:id/complete', protect, async (req, res, next) => {
     workOrder.status = 'Completed';
     workOrder.endTime = new Date();
     if (realDuration) workOrder.realDuration = realDuration;
-    if (qualityCheck) workOrder.qualityCheck = qualityCheck;
+    if (qualityCheck) workOrder.qualityCheck = { ...workOrder.qualityCheck, ...qualityCheck };
 
     // Update material consumption if provided
     if (materials && Array.isArray(materials)) {
@@ -290,6 +290,9 @@ router.patch('/:id/complete', protect, async (req, res, next) => {
 
       // Update manufacturing order progress
       await updateMOProgress(workOrder.manufacturingOrderId.toString());
+
+      // Update next work order status to Ready
+      await updateNextWorkOrderStatus(req.params.id);
 
       res.status(200).json({
         success: true,

@@ -4,16 +4,17 @@ const componentSchema = new mongoose.Schema({
   materialId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Material',
-    required: true
+    required: [true, 'Material ID is required']
   },
   quantity: {
     type: Number,
-    required: true,
-    min: 0.001
+    required: [true, 'Quantity is required'],
+    min: [0.001, 'Quantity must be greater than 0']
   },
   unit: {
     type: String,
-    required: true
+    required: [true, 'Unit is required'],
+    enum: ['pcs', 'kg', 'm', 'l', 'm2', 'm3', 'box', 'pack', 'set']
   },
   unitCost: {
     type: Number,
@@ -26,6 +27,14 @@ const componentSchema = new mongoose.Schema({
     min: 0,
     max: 100
   },
+  isCritical: {
+    type: Boolean,
+    default: false
+  },
+  alternativeMaterials: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Material'
+  }],
   notes: {
     type: String,
     maxlength: 200
@@ -35,26 +44,33 @@ const componentSchema = new mongoose.Schema({
 const operationSchema = new mongoose.Schema({
   sequence: {
     type: Number,
-    required: true,
-    min: 1
+    required: [true, 'Operation sequence is required'],
+    min: [1, 'Sequence must be at least 1']
   },
   name: {
     type: String,
-    required: true
+    required: [true, 'Operation name is required'],
+    trim: true
   },
   workCenter: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'WorkCenter',
-    required: true
+    required: [true, 'Work center is required']
   },
   duration: {
     type: Number, // in minutes
-    required: true,
-    min: 1
+    required: [true, 'Duration is required'],
+    min: [1, 'Duration must be at least 1 minute']
   },
   setupTime: {
     type: Number, // in minutes
-    default: 0
+    default: 0,
+    min: 0
+  },
+  teardownTime: {
+    type: Number, // in minutes
+    default: 0,
+    min: 0
   },
   description: {
     type: String,
@@ -62,6 +78,17 @@ const operationSchema = new mongoose.Schema({
   },
   skillRequired: {
     type: String
+  },
+  qualityCheckRequired: {
+    type: Boolean,
+    default: false
+  },
+  toolsRequired: [{
+    type: String
+  }],
+  safetyInstructions: {
+    type: String,
+    maxlength: 500
   }
 });
 
@@ -70,14 +97,16 @@ const billOfMaterialsSchema = new mongoose.Schema({
     type: String,
     unique: true,
     uppercase: true,
-    required: false,
-    default: function() {
-      return `BOM-${new Date().getFullYear()}-${String(Math.floor(Math.random() * 1000)).padStart(3, '0')}`;
-    }
+    sparse: true
   },
   finishedProduct: {
     type: String,
-    required: [true, 'Finished product is required']
+    required: [true, 'Finished product is required'],
+    trim: true
+  },
+  finishedProductMaterialId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Material'
   },
   version: {
     type: String,
@@ -102,10 +131,16 @@ const billOfMaterialsSchema = new mongoose.Schema({
   },
   unit: {
     type: String,
-    default: 'pcs'
+    default: 'pcs',
+    enum: ['pcs', 'kg', 'm', 'l', 'm2', 'm3', 'box', 'pack', 'set']
   },
   category: {
-    type: String
+    type: String,
+    trim: true
+  },
+  estimatedCycleTime: {
+    type: Number, // in minutes, calculated from operations
+    default: 0
   },
   createdBy: {
     type: mongoose.Schema.Types.ObjectId,
@@ -142,8 +177,16 @@ billOfMaterialsSchema.pre('save', async function(next) {
         $lt: new Date(year + 1, 0, 1)
       }
     });
-    this.reference = `BOM-${year}-${String(count + 1).padStart(3, '0')}`;
+    this.reference = `BOM-${year}-${String(count + 1).padStart(4, '0')}`;
   }
+
+  // Calculate estimated cycle time from operations
+  if (this.operations && this.operations.length > 0) {
+    this.estimatedCycleTime = this.operations.reduce((total, op) => {
+      return total + (op.duration || 0) + (op.setupTime || 0) + (op.teardownTime || 0);
+    }, 0);
+  }
+
   next();
 });
 

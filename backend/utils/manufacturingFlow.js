@@ -21,44 +21,65 @@ const generateWorkOrdersFromMO = async (manufacturingOrderId, createdBy) => {
       throw new Error('No BOM associated with this manufacturing order');
     }
 
+    if (mo.workOrders && mo.workOrders.length > 0) {
+      throw new Error('Work orders have already been generated for this manufacturing order');
+    }
+
     const bom = mo.bomId;
+
+    if (!bom.operations || bom.operations.length === 0) {
+      throw new Error('BOM has no operations defined');
+    }
+
+    // Sort operations by sequence
+    const sortedOperations = bom.operations.sort((a, b) => a.sequence - b.sequence);
 
     // Generate work orders for each operation in sequence
     const workOrders = [];
-    for (let i = 0; i < bom.operations.length; i++) {
-      const operation = bom.operations[i];
-
-      // Calculate material requirements for this operation
+    for (const operation of sortedOperations) {
+      // Prepare materials for this work order (distributed across operations or specific to this one)
       const requiredMaterials = bom.components.map(component => ({
         materialId: component.materialId,
-        name: component.name,
+        name: component.materialId.name || component.name || 'Unknown Material',
         quantityRequired: component.quantity * mo.quantity,
         unit: component.unit,
         unitCost: component.unitCost,
-        wastePercentage: component.wastePercentage
+        wastePercentage: component.wastePercentage || 0
       }));
 
-      const workOrder = await WorkOrder.create({
+      const workOrderData = {
         manufacturingOrderId: mo._id,
         operationName: operation.name,
         workCenter: operation.workCenter,
         sequence: operation.sequence,
         expectedDuration: operation.duration,
-        setupTime: operation.setupTime,
-        description: operation.description,
-        skillRequired: operation.skillRequired,
+        setupTime: operation.setupTime || 0,
+        teardownTime: operation.teardownTime || 0,
         materials: requiredMaterials,
         assignee: mo.assignee._id,
+        status: operation.sequence === 1 ? 'Ready' : 'Pending', // First operation is ready
+        skillLevel: operation.skillRequired || 'Intermediate',
+        qualityCheck: {
+          required: operation.qualityCheckRequired || false
+        },
+        tools: operation.toolsRequired ? operation.toolsRequired.map(t => ({ name: t })) : [],
         createdBy: createdBy
-      });
+      };
 
+      const workOrder = await WorkOrder.create(workOrderData);
       workOrders.push(workOrder);
       mo.workOrders.push(workOrder._id);
+    }
+
+    // Update MO status to Confirmed once work orders are generated
+    if (mo.status === 'Draft') {
+      mo.status = 'Confirmed';
     }
 
     await mo.save();
     return workOrders;
   } catch (error) {
+    console.error('Error in generateWorkOrdersFromMO:', error);
     throw error;
   }
 };
@@ -75,36 +96,79 @@ const reserveMaterialsForMO = async (manufacturingOrderId, reservedBy) => {
       throw new Error('Manufacturing order not found');
     }
 
+    if (mo.status === 'Cancelled') {
+      throw new Error('Cannot reserve materials for cancelled manufacturing order');
+    }
+
     const reservations = [];
+    const errors = [];
 
     for (const component of mo.components) {
-      const material = await Material.findById(component.materialId);
-      if (!material) {
-        throw new Error(`Material not found: ${component.name}`);
+      try {
+        const material = await Material.findById(component.materialId);
+        if (!material) {
+          errors.push(`Material not found: ${component.name}`);
+          continue;
+        }
+
+        // Check if already reserved
+        if (component.isReserved) {
+          console.log(`Material ${component.name} already reserved`);
+          continue;
+        }
+
+        // Calculate required quantity including waste
+        const requiredQuantity = component.quantityRequired * (1 + (component.wastePercentage || 0) / 100);
+
+        // Check if enough stock is available
+        const availableStock = material.inventory.currentStock - material.inventory.reservedStock;
+        if (availableStock < requiredQuantity) {
+          errors.push(
+            `Insufficient stock for material: ${component.name}. ` +
+            `Available: ${availableStock} ${component.unit}, Required: ${requiredQuantity} ${component.unit}`
+          );
+          continue;
+        }
+
+        // Reserve the material
+        material.inventory.reservedStock += requiredQuantity;
+        material.inventory.availableStock = material.inventory.currentStock - material.inventory.reservedStock;
+        await material.save();
+
+        // Update component reservation
+        component.quantityReserved = requiredQuantity;
+        component.isReserved = true;
+        component.reservedAt = new Date();
+
+        const transaction = {
+          type: 'RESERVE',
+          quantity: requiredQuantity,
+          unitCost: material.inventory.lastCost || component.unitCost,
+          reference: mo.reference,
+          referenceType: 'Manufacturing Order',
+          notes: `Reserved for MO ${mo.reference}`,
+          performedBy: reservedBy,
+          timestamp: new Date()
+        };
+
+        reservations.push(transaction);
+
+        // Log transaction in stock ledger
+        await logStockTransaction(material, transaction);
+      } catch (err) {
+        errors.push(`Error reserving ${component.name}: ${err.message}`);
       }
+    }
 
-      // Check if enough stock is available
-      const requiredQuantity = component.quantityRequired * (1 + component.wastePercentage / 100);
-      if (material.availableStock < requiredQuantity) {
-        throw new Error(`Insufficient stock for material: ${component.name}. Available: ${material.availableStock}, Required: ${requiredQuantity}`);
-      }
+    await mo.save();
 
-      // Reserve the material
-      const transaction = material.updateStock(requiredQuantity, 'RESERVE', mo.reference, reservedBy);
-      reservations.push(transaction);
-
-      await material.save();
-
-      // Update component reservation
-      component.quantityReserved = requiredQuantity;
-      await mo.save();
-
-      // Log transaction in stock ledger
-      await logStockTransaction(material, transaction);
+    if (errors.length > 0) {
+      throw new Error(`Reservation completed with errors:\n${errors.join('\n')}`);
     }
 
     return reservations;
   } catch (error) {
+    console.error('Error in reserveMaterialsForMO:', error);
     throw error;
   }
 };
@@ -299,17 +363,118 @@ const updateMOProgress = async (manufacturingOrderId) => {
     mo.progress = progress;
 
     // Update status based on progress
-    if (progress === 0) {
+    if (progress === 0 && mo.status === 'Draft') {
       mo.status = 'Confirmed';
+    } else if (progress > 0 && progress < 100) {
+      mo.status = 'In Progress';
+      if (!mo.actualStartDate) {
+        mo.actualStartDate = new Date();
+      }
     } else if (progress === 100) {
       mo.status = 'To Close';
-    } else {
-      mo.status = 'In Progress';
     }
 
     await mo.save();
     return mo;
   } catch (error) {
+    console.error('Error in updateMOProgress:', error);
+    throw error;
+  }
+};
+
+/**
+ * Update next work order status to Ready when previous is completed
+ */
+const updateNextWorkOrderStatus = async (completedWorkOrderId) => {
+  try {
+    const completedWO = await WorkOrder.findById(completedWorkOrderId);
+    if (!completedWO) {
+      throw new Error('Work order not found');
+    }
+
+    // Find the next work order in sequence
+    const nextWO = await WorkOrder.findOne({
+      manufacturingOrderId: completedWO.manufacturingOrderId,
+      sequence: completedWO.sequence + 1,
+      status: 'Pending'
+    });
+
+    if (nextWO) {
+      nextWO.status = 'Ready';
+      await nextWO.save();
+      return nextWO;
+    }
+
+    return null;
+  } catch (error) {
+    console.error('Error in updateNextWorkOrderStatus:', error);
+    throw error;
+  }
+};
+
+/**
+ * Cancel manufacturing order and unreserve materials
+ */
+const cancelManufacturingOrder = async (manufacturingOrderId, cancelledBy, reason) => {
+  try {
+    const mo = await ManufacturingOrder.findById(manufacturingOrderId)
+      .populate('workOrders');
+
+    if (!mo) {
+      throw new Error('Manufacturing order not found');
+    }
+
+    if (mo.status === 'Done') {
+      throw new Error('Cannot cancel completed manufacturing order');
+    }
+
+    // Unreserve all materials
+    for (const component of mo.components) {
+      if (component.isReserved && component.quantityReserved > 0) {
+        const material = await Material.findById(component.materialId);
+        if (material) {
+          material.inventory.reservedStock = Math.max(
+            0,
+            material.inventory.reservedStock - component.quantityReserved
+          );
+          material.inventory.availableStock = material.inventory.currentStock - material.inventory.reservedStock;
+          await material.save();
+
+          // Log unreservation
+          const transaction = {
+            type: 'UNRESERVE',
+            quantity: component.quantityReserved,
+            unitCost: component.unitCost,
+            reference: mo.reference,
+            referenceType: 'Manufacturing Order',
+            notes: `Unreserved due to MO cancellation: ${reason || 'No reason provided'}`,
+            performedBy: cancelledBy,
+            timestamp: new Date()
+          };
+          await logStockTransaction(material, transaction);
+        }
+
+        component.isReserved = false;
+        component.quantityReserved = 0;
+      }
+    }
+
+    // Cancel all pending work orders
+    for (const wo of mo.workOrders) {
+      if (['Pending', 'Ready'].includes(wo.status)) {
+        wo.status = 'Cancelled';
+        await wo.save();
+      }
+    }
+
+    mo.status = 'Cancelled';
+    mo.cancellationReason = reason || 'No reason provided';
+    mo.updatedBy = cancelledBy;
+    await mo.save();
+
+    return mo;
+  } catch (error) {
+    console.error('Error in cancelManufacturingOrder:', error);
     throw error;
   }
 };
@@ -321,5 +486,7 @@ module.exports = {
   completeManufacturingOrder,
   logStockTransaction,
   createMOFromBOM,
-  updateMOProgress
+  updateMOProgress,
+  updateNextWorkOrderStatus,
+  cancelManufacturingOrder
 };

@@ -9,7 +9,8 @@ const {
   reserveMaterialsForMO,
   completeManufacturingOrder,
   createMOFromBOM,
-  updateMOProgress
+  updateMOProgress,
+  cancelManufacturingOrder
 } = require('../utils/manufacturingFlow');
 
 // @desc    Get all manufacturing orders
@@ -420,6 +421,35 @@ router.get('/stats/overview', protect, async (req, res, next) => {
         overdueOrders,
         statusBreakdown: stats
       }
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// @desc    Cancel manufacturing order
+// @route   PATCH /api/manufacturing-orders/:id/cancel
+// @access  Private (Manager, Admin)
+router.patch('/:id/cancel', protect, authorize('manager', 'admin'), async (req, res, next) => {
+  try {
+    const { reason } = req.body;
+
+    if (!reason) {
+      return res.status(400).json({
+        success: false,
+        message: 'Cancellation reason is required'
+      });
+    }
+
+    const manufacturingOrder = await cancelManufacturingOrder(req.params.id, req.user.id, reason);
+
+    await manufacturingOrder.populate('assignee', 'username email role');
+    await manufacturingOrder.populate('workOrders');
+
+    res.status(200).json({
+      success: true,
+      message: 'Manufacturing order cancelled successfully',
+      data: manufacturingOrder
     });
   } catch (error) {
     next(error);

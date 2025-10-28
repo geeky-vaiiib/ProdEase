@@ -25,6 +25,11 @@ const componentSchema = new mongoose.Schema({
     default: 0,
     min: 0
   },
+  quantityScrapped: {
+    type: Number,
+    default: 0,
+    min: 0
+  },
   unit: {
     type: String,
     required: true
@@ -38,6 +43,13 @@ const componentSchema = new mongoose.Schema({
     default: 0,
     min: 0,
     max: 100
+  },
+  isReserved: {
+    type: Boolean,
+    default: false
+  },
+  reservedAt: {
+    type: Date
   }
 });
 
@@ -45,16 +57,31 @@ const manufacturingOrderSchema = new mongoose.Schema({
   reference: {
     type: String,
     unique: true,
-    uppercase: true
+    uppercase: true,
+    sparse: true
   },
   finishedProduct: {
     type: String,
     required: [true, 'Finished product is required']
   },
+  finishedProductMaterialId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Material'
+  },
   quantity: {
     type: Number,
     required: [true, 'Quantity is required'],
     min: [1, 'Quantity must be at least 1']
+  },
+  quantityProduced: {
+    type: Number,
+    default: 0,
+    min: 0
+  },
+  quantityScrap: {
+    type: Number,
+    default: 0,
+    min: 0
   },
   scheduledStartDate: {
     type: Date,
@@ -104,6 +131,18 @@ const manufacturingOrderSchema = new mongoose.Schema({
     type: String,
     maxlength: 1000
   },
+  cancellationReason: {
+    type: String,
+    maxlength: 500
+  },
+  isDelayed: {
+    type: Boolean,
+    default: false
+  },
+  delayReason: {
+    type: String,
+    maxlength: 500
+  },
   createdBy: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
@@ -133,8 +172,14 @@ manufacturingOrderSchema.pre('save', async function(next) {
         $lt: new Date(year + 1, 0, 1)
       }
     });
-    this.reference = `MO-${year}-${String(count + 1).padStart(3, '0')}`;
+    this.reference = `MO-${year}-${String(count + 1).padStart(4, '0')}`;
   }
+
+  // Check if order is delayed
+  if (this.status !== 'Done' && this.status !== 'Cancelled' && this.dueDate < new Date()) {
+    this.isDelayed = true;
+  }
+
   next();
 });
 
@@ -149,8 +194,28 @@ manufacturingOrderSchema.virtual('duration').get(function() {
 // Virtual for total cost
 manufacturingOrderSchema.virtual('totalCost').get(function() {
   return this.components.reduce((total, component) => {
-    return total + (component.quantity * component.unitCost);
+    return total + (component.quantityRequired * component.unitCost);
   }, 0);
+});
+
+// Virtual for actual cost (including waste and scrap)
+manufacturingOrderSchema.virtual('actualCost').get(function() {
+  return this.components.reduce((total, component) => {
+    return total + ((component.quantityConsumed + component.quantityScrapped) * component.unitCost);
+  }, 0);
+});
+
+// Virtual for completion percentage
+manufacturingOrderSchema.virtual('completionRate').get(function() {
+  if (this.quantity === 0) return 0;
+  return Math.round((this.quantityProduced / this.quantity) * 100);
+});
+
+// Virtual for efficiency
+manufacturingOrderSchema.virtual('efficiency').get(function() {
+  if (!this.actualStartDate || !this.actualEndDate) return null;
+  // Could be enhanced with estimated vs actual time comparison
+  return this.progress;
 });
 
 manufacturingOrderSchema.set('toJSON', { virtuals: true });
