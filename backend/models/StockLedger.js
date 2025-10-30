@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const transactionSchema = new mongoose.Schema({
   type: {
     type: String,
-    enum: ['IN', 'OUT', 'ADJUSTMENT'],
+    enum: ['IN', 'OUT', 'ADJUSTMENT', 'RESERVE', 'UNRESERVE'],
     required: true
   },
   quantity: {

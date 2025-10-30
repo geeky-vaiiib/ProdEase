@@ -117,15 +117,17 @@ const bomSchemas = {
   create: Joi.object({
     reference: Joi.string().optional(),
     finishedProduct: Joi.string().required(),
+    finishedProductMaterialId: Joi.string().optional(),
     version: Joi.string().default('1.0'),
     description: Joi.string().max(1000).optional(),
     components: Joi.array().items(Joi.object({
       materialId: Joi.string().required(),
-      name: Joi.string().required(),
       quantity: Joi.number().min(0.001).required(),
       unit: Joi.string().required(),
       unitCost: Joi.number().min(0).default(0),
       wastePercentage: Joi.number().min(0).max(100).default(0),
+      isCritical: Joi.boolean().default(false),
+      alternativeMaterials: Joi.array().items(Joi.string()).optional(),
       notes: Joi.string().max(200).optional()
     })).default([]),
     operations: Joi.array().items(Joi.object({
@@ -134,6 +136,9 @@ const bomSchemas = {
       workCenter: Joi.string().required(),
       duration: Joi.number().min(1).required(),
       setupTime: Joi.number().min(0).default(0),
+      teardownTime: Joi.number().min(0).default(0),
+      qualityCheckRequired: Joi.boolean().default(false),
+      tools: Joi.array().items(Joi.string()).optional(),
       description: Joi.string().max(500).optional(),
       skillRequired: Joi.string().optional()
     })).default([]),
@@ -145,16 +150,18 @@ const bomSchemas = {
   update: Joi.object({
     reference: Joi.string().optional(),
     finishedProduct: Joi.string().optional(),
+    finishedProductMaterialId: Joi.string().optional(),
     version: Joi.string().optional(),
     description: Joi.string().max(1000).optional(),
     status: Joi.string().valid('Draft', 'Active', 'Archived').optional(),
     components: Joi.array().items(Joi.object({
       materialId: Joi.string().required(),
-      name: Joi.string().required(),
       quantity: Joi.number().min(0.001).optional(),
       unit: Joi.string().optional(),
       unitCost: Joi.number().min(0).optional(),
       wastePercentage: Joi.number().min(0).max(100).optional(),
+      isCritical: Joi.boolean().optional(),
+      alternativeMaterials: Joi.array().items(Joi.string()).optional(),
       notes: Joi.string().max(200).optional()
     })).optional(),
     operations: Joi.array().items(Joi.object({

@@ -53,6 +53,33 @@ router.get('/', protect, async (req, res, next) => {
 // @desc    Get single stock item
 // @route   GET /api/stock-ledger/:id
 // @access  Private
+// @desc    Get stock ledger for specific material
+// @route   GET /api/stock-ledger/material/:materialId
+// @access  Private
+router.get('/material/:materialId', protect, async (req, res, next) => {
+  try {
+    const stockLedger = await StockLedger.findOne({ materialId: req.params.materialId })
+      .populate('materialId', 'name code category')
+      .populate('createdBy', 'username email')
+      .populate('transactions.performedBy', 'username email')
+      .sort({ 'transactions.timestamp': -1 });
+
+    if (!stockLedger) {
+      return res.status(404).json({
+        success: false,
+        message: 'Stock ledger not found for this material'
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: stockLedger
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
 router.get('/:id', protect, async (req, res, next) => {
   try {
     const stockItem = await StockLedger.findById(req.params.id)

@@ -20,7 +20,6 @@ const commentSchema = new mongoose.Schema({
 const workOrderSchema = new mongoose.Schema({
   reference: {
     type: String,
-    required: [true, 'Reference is required'],
     unique: true,
     uppercase: true,
     sparse: true
@@ -226,8 +225,9 @@ workOrderSchema.virtual('actualDuration').get(function() {
 
 // Virtual for cost
 workOrderSchema.virtual('cost').get(function() {
+  if (!this.materials || this.materials.length === 0) return 0;
   return this.materials.reduce((total, material) => {
-    return total + ((material.quantityConsumed + material.quantityScrapped) * material.unitCost);
+    return total + ((material.quantityConsumed || 0) + (material.quantityScrapped || 0)) * (material.unitCost || 0);
   }, 0);
 });
 

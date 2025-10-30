@@ -192,6 +192,7 @@ billOfMaterialsSchema.pre('save', async function(next) {
 
 // Virtual for total material cost
 billOfMaterialsSchema.virtual('totalMaterialCost').get(function() {
+  if (!this.components || this.components.length === 0) return 0;
   return this.components.reduce((total, component) => {
     return total + (component.quantity * component.unitCost);
   }, 0);
@@ -199,6 +200,7 @@ billOfMaterialsSchema.virtual('totalMaterialCost').get(function() {
 
 // Virtual for total operation time
 billOfMaterialsSchema.virtual('totalOperationTime').get(function() {
+  if (!this.operations || this.operations.length === 0) return 0;
   return this.operations.reduce((total, operation) => {
     return total + operation.duration + operation.setupTime;
   }, 0);

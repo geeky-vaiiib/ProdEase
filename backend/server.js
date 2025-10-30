@@ -18,6 +18,7 @@ const bomRoutes = require('./routes/billOfMaterials');
 const workCenterRoutes = require('./routes/workCenters');
 const stockLedgerRoutes = require('./routes/stockLedger');
 const userRoutes = require('./routes/users');
+const materialsRoutes = require('./routes/materials');
 
 const app = express();
 
@@ -353,6 +354,7 @@ app.use('/api/bom', bomRoutes);
 app.use('/api/work-centers', workCenterRoutes);
 app.use('/api/stock-ledger', stockLedgerRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/materials', materialsRoutes);
 app.use('/api/theme', require('./routes/theme'));
 
 // 404 handler

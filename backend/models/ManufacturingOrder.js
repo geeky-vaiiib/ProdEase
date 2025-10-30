@@ -193,6 +193,7 @@ manufacturingOrderSchema.virtual('duration').get(function() {
 
 // Virtual for total cost
 manufacturingOrderSchema.virtual('totalCost').get(function() {
+  if (!this.components || this.components.length === 0) return 0;
   return this.components.reduce((total, component) => {
     return total + (component.quantityRequired * component.unitCost);
   }, 0);
@@ -200,6 +201,7 @@ manufacturingOrderSchema.virtual('totalCost').get(function() {
 
 // Virtual for actual cost (including waste and scrap)
 manufacturingOrderSchema.virtual('actualCost').get(function() {
+  if (!this.components || this.components.length === 0) return 0;
   return this.components.reduce((total, component) => {
     return total + ((component.quantityConsumed + component.quantityScrapped) * component.unitCost);
   }, 0);

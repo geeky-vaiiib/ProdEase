@@ -211,7 +211,7 @@ router.patch('/:id/start', protect, async (req, res, next) => {
       });
     }
 
-    if (workOrder.status !== 'Pending') {
+    if (!['Pending', 'Ready'].includes(workOrder.status)) {
       return res.status(400).json({
         success: false,
         message: 'Work order cannot be started from current status'
